@@ -2,6 +2,7 @@
 #define _MAIN_H
 
 #include <Arduino.h>
+#include <ESP8266WiFi.h>
 #define IO_FLASH        0
 #define IO_HELP         2
 #define IO_SECURITY     4
