@@ -23,13 +23,26 @@ const char* configFile = "/config.json";
 bool waitWifiConnection = false;
 bool isFirmwareUpdateRequest = false;
 networkConfigType s_network;
+hwConfigType s_hwConfig;
  
 
 
 
 void setup(){
-    // Hardware Initialize  
-    hwInit();
+    // Hardware Initialize
+    s_hwConfig.ioHelp = IO_HELP; 
+    s_hwConfig.ioSecurity = IO_SECURITY; 
+    s_hwConfig.ioStatusLED = IO_STATUS_LED;
+    s_hwConfig.ioWifiReset = IO_WIFI_RST;
+    s_hwConfig.baudrate = 9600;
+    bsp_hwInit(&s_hwConfig); 
+
+    // Network Configuration from JSON file
+    loadConfigJSON(configFile, &s_network);
+    Serial.print("Loaded ssid: ");
+    Serial.println(s_network.ssid);
+    Serial.print("Loaded pwd: ");
+    Serial.println(s_network.pwd);
  
     // Create Tasks
     PeriodTask t1(500, &task_blinkStatusLED);
@@ -58,35 +71,20 @@ void loop(){
 
 
 
-void hwInit() {
-    // Initialize hardware
-    pinMode(IO_STATUS_LED, OUTPUT);
-    pinMode(IO_HELP, INPUT_PULLUP);
-    pinMode(IO_SECURITY, INPUT_PULLUP);
-    Serial.begin(9600);
-    
-    // Load configuration from .json file in ROM with littleFS filesystem
-    loadConfigJSON(configFile, &s_network);
-    Serial.print("Loaded ssid: ");
-    Serial.println(s_network->ssid);
-    Serial.print("Loaded pwd: ");
-    Serial.println(s_network->pwd);
-}
-
-
-
 void task_blinkStatusLED() {
     Serial.println("********** task blink statue LED");
-    digitalWrite(IO_STATUS_LED, !digitalRead(IO_STATUS_LED));
+    bsp_toggleStatusLED(&s_hwConfig);
 }
 
 void task_optoSignalCheck() {
-    if (!digitalRead(IO_SECURITY)) {
+    if (bsp_isSecurityOccur(&s_hwConfig)) {
         // do something when SECURITY event occur
+        // send MQTT message, etc.
         Serial.println("SECURITY!");
     }
-    if (!digitalRead(IO_HELP)) {
+    if (bsp_isHelpOccur(&s_hwConfig)) {
         // do something when HELP event occur
+        // send MQTT message, etc.
         Serial.println("HELP!");
     }
 }

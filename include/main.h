@@ -20,6 +20,16 @@ typedef struct
 
 }networkConfigType;
 
+typedef struct
+{
+    int8_t ioHelp;
+    int8_t ioSecurity;
+    int8_t ioStatusLED;
+    int8_t ioWifiReset;
+    int baudrate;
+
+}hwConfigType;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +40,12 @@ extern "C" {
  */
 char* copyString(const char* src, int size);
 bool loadConfigJSON(const char* filename, networkConfigType *s_network);
+
+bool bsp_hwInit(hwConfigType *s_config); 
+void bsp_toggleStatusLED(hwConfigType *s_config);
+bool bsp_isSecurityOccur(hwConfigType *s_config);
+bool bsp_isHelpOccur(hwConfigType *s_config);
+bool bsp_isWifiResetButtonPressed(hwConfigType *s_config);
 #ifdef __cplusplus
 }
 #endif
