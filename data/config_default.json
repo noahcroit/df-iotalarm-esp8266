@@ -1,0 +1,10 @@
+{
+    "ssid": "WIFI_SSID",
+    "pwd": "WIFI_PWD",
+    "mqtt_broker": "BROKER_URL",
+    "mqtt_port": 1883,
+    "mqtt_topics": [
+    ],
+    "keepalive": 60
+}
+
