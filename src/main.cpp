@@ -19,10 +19,10 @@ TimerScheduler schd;
 
 
 // Global variables
-const char* ssid = "";
-const char* password = "";
+const char* configFile = "/config.json";
 bool waitWifiConnection = false;
 bool isFirmwareUpdateRequest = false;
+networkConfigType s_network;
  
 
 
@@ -58,20 +58,27 @@ void loop(){
 
 
 
-void hwInit(){
+void hwInit() {
     // Initialize hardware
     pinMode(IO_STATUS_LED, OUTPUT);
     pinMode(IO_HELP, INPUT_PULLUP);
     pinMode(IO_SECURITY, INPUT_PULLUP);
     Serial.begin(9600);
-    WiFi.begin(ssid, password);
+    
+    // Load configuration from .json file in ROM with littleFS filesystem
+    loadConfigJSON(configFile, &s_network);
+    Serial.print("Loaded ssid: ");
+    Serial.println(s_network->ssid);
+    Serial.print("Loaded pwd: ");
+    Serial.println(s_network->pwd);
 }
+
+
 
 void task_blinkStatusLED() {
     Serial.println("********** task blink statue LED");
     digitalWrite(IO_STATUS_LED, !digitalRead(IO_STATUS_LED));
 }
-
 
 void task_optoSignalCheck() {
     if (!digitalRead(IO_SECURITY)) {
@@ -88,7 +95,7 @@ void task_WiFiManagement() {
     if (WiFi.status() != WL_CONNECTED) {
         if(!waitWifiConnection) {
             Serial.println("Connection WiFi...");
-            WiFi.begin(ssid, password);
+            WiFi.begin(s_network.ssid, s_network.pwd);
             waitWifiConnection = true;
         }
     }
