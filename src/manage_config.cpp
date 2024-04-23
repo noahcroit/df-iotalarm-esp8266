@@ -13,7 +13,7 @@ char* copyString(const char* src, int size) {
     return (char *)s;
 }
 
-bool loadConfigJSON(const char* filename, networkConfigType *s_network) {
+bool loadConfigJSON(const char* filename, deviceConfigType *s_config) {
     if (!LittleFS.begin()) {
         debugln("Failed to mount file system");
         return false;
@@ -29,17 +29,26 @@ bool loadConfigJSON(const char* filename, networkConfigType *s_network) {
         debugln("Failed to parse config file");
         return false;
     }
-    const char* ssid = doc["ssid"];
-    const char* pwd = doc["pwd"];
-    s_network->ssid = copyString(ssid, 20);
-    s_network->pwd = copyString(pwd, 20);
+    const char* configAP = doc["config_ap"];
+    const char* broker = doc["mqtt_broker"];
+    const char* port = doc["mqtt_port"];
+    const char* help = doc["topic_help"];
+    const char* security = doc["topic_security"];
+    s_config->configAP = copyString(configAP, 20);
+    s_config->mqttBrokerUrl = copyString(broker, 20);
+    s_config->mqttPort = copyString(port, 20);
+    s_config->mqttTopicHelp = copyString(help, 20);
+    s_config->mqttTopicSecurity = copyString(security, 20);
     return true;
 }
 
-bool saveConfigJSON(const char* filename, networkConfigType *s_network) {
+bool saveConfigJSON(const char* filename, deviceConfigType *s_config) {
     JsonDocument doc;
-    doc["ssid"] = s_network->ssid;
-    doc["pwd"] = s_network->pwd;
+    doc["config_ap"] = s_config->configAP;
+    doc["mqtt_broker"] = s_config->mqttBrokerUrl;
+    doc["mqtt_port"] = s_config->mqttPort;
+    doc["topic_help"] = s_config->mqttTopicHelp;
+    doc["topic_security"] = s_config->mqttTopicSecurity;
 
     File configFile = LittleFS.open(filename, "w");
     if (!configFile) {
@@ -50,23 +59,16 @@ bool saveConfigJSON(const char* filename, networkConfigType *s_network) {
     return true;
 }
 
-void resetWifiConfig(networkConfigType *s_network) {
+void resetWifiConfig(deviceConfigType *s_config) {
     WiFi.mode(WIFI_STA);
     //wm.resetSettings();
     bool res;
-    wm.setConfigPortalTimeout(180);
-    wm.startConfigPortal("DF_IoTAlarm_AP");
-    //res = wm.autoConnect("DF_IoTAlarmConfig","digitalfocus"); // password protected ap
-    /*
+    wm.setConfigPortalTimeout(300);
+    res = wm.startConfigPortal(s_config->configAP);
     if(!res) {
-        debugln("Failed to connect");
-        // ESP.restart();
+        debugln("Failed to connect or Abort config.");
     }
     else {
-        //if you get here you have connected to the WiFi
-        debugln("WIFI connected!");
+        debugln("Config successfully, WIFI connected.");
     }
-    */
-    //s_networkConfig->ssid = (char *)"new ssid";
-    //s_networkConfig->pwd = (char *)"new password";
 }

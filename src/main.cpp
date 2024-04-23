@@ -20,27 +20,22 @@ TimerScheduler schd;
 const char* configFile = "/config.json";
 bool waitWifiConnection = false;
 bool isFirmwareUpdateRequest = false;
-networkConfigType s_networkConfig;
-hwConfigType s_hwConfig;
+deviceConfigType s_config;
 deviceStateType dState;
 
 
 
 void setup(){
     // Hardware Initialize
-    s_hwConfig.ioHelp = IO_HELP; 
-    s_hwConfig.ioSecurity = IO_SECURITY; 
-    s_hwConfig.ioStatusLED = IO_STATUS_LED;
-    s_hwConfig.ioWifiReset = IO_WIFI_RST;
-    s_hwConfig.baudrate = UART_BAUD;
-    bsp_hwInit(&s_hwConfig); 
+    s_config.ioHelp = IO_HELP; 
+    s_config.ioSecurity = IO_SECURITY; 
+    s_config.ioStatusLED = IO_STATUS_LED;
+    s_config.ioWifiReset = IO_WIFI_RST;
+    s_config.baudrate = UART_BAUD;
+    bsp_hwInit(&s_config); 
 
-    // Network Configuration from JSON file
-    loadConfigJSON(configFile, &s_networkConfig);
-    debugln("Loaded ssid: ");
-    debugln(s_networkConfig.ssid);
-    debugln("Loaded pwd: ");
-    debugln(s_networkConfig.pwd);
+    // Netw Configuration from JSON file
+    loadConfigJSON(configFile, &s_config);
  
     // Create Tasks
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
@@ -73,12 +68,17 @@ void loop(){
 
 void task_blinkStatusLED() {
     debugln("********** task blink statue LED");
-    bsp_toggleStatusLED(&s_hwConfig);
+    if (dState.wifiState == WIFI_CONNECTED) {
+        bsp_toggleStatusLED(&s_config);
+    }
+    if(dState.wifiState == WIFI_RESET) {
+        bsp_turnOnStatusLED(&s_config);
+    }
 }
 
 void task_alarmCheck() {
     // SECURITY alarm signal
-    if (bsp_isSecurityOccur(&s_hwConfig)) {
+    if (bsp_isSecurityOccur(&s_config)) {
         dState.securityLowCnt++;
         if (dState.securityLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
             // do something when SECURITY event occur
@@ -88,7 +88,7 @@ void task_alarmCheck() {
         }
     }
     // HELP alarm signal
-    if (bsp_isHelpOccur(&s_hwConfig)) {
+    if (bsp_isHelpOccur(&s_config)) {
         dState.helpLowCnt++;
         if (dState.helpLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
             // do something when HELP event occur
@@ -104,8 +104,7 @@ void task_wifiManagement() {
     switch (dState.wifiState) {
         case WIFI_DISCONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
-                debugln("Connection WiFi...");
-                //WiFi.begin(s_networkConfig.ssid, s_networkConfig.pwd);
+                debugln("Connect to previous WiFi AP...");
                 WiFi.begin();
                 dState.wifiState = WIFI_CONNECTING;
             }
@@ -127,15 +126,13 @@ void task_wifiManagement() {
 
         case WIFI_RESET:
             debugln("WIFI Re-config......");
-            bsp_turnOnStatusLED(&s_hwConfig);
-            resetWifiConfig(&s_networkConfig);
-            bsp_turnOffStatusLED(&s_hwConfig);
+            resetWifiConfig(&s_config);
             dState.wifiState = WIFI_DISCONNECTED;
             break;
     }
     
     // check WiFi reset button
-    if(bsp_isWifiResetButtonPressed(&s_hwConfig)) {
+    if(bsp_isWifiResetButtonPressed(&s_config)) {
         // set period blinking task
         dState.wifiState = WIFI_RESET;
     }

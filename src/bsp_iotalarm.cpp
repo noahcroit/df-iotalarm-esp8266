@@ -2,7 +2,7 @@
 
 
 
-bool bsp_hwInit(hwConfigType *s_config) { 
+bool bsp_hwInit(deviceConfigType *s_config) { 
     // Initialize IO
     pinMode(s_config->ioStatusLED, OUTPUT);
     pinMode(s_config->ioSecurity, INPUT_PULLUP);
@@ -18,26 +18,26 @@ bool bsp_hwInit(hwConfigType *s_config) {
     return true;
 }
 
-void bsp_toggleStatusLED(hwConfigType *s_config) {
+void bsp_toggleStatusLED(deviceConfigType *s_config) {
     digitalWrite(s_config->ioStatusLED, !digitalRead(s_config->ioStatusLED));
 }
 
-void bsp_turnOffStatusLED(hwConfigType *s_config) {
+void bsp_turnOffStatusLED(deviceConfigType *s_config) {
     digitalWrite(s_config->ioStatusLED, HIGH);
 }
 
-void bsp_turnOnStatusLED(hwConfigType *s_config) {
+void bsp_turnOnStatusLED(deviceConfigType *s_config) {
     digitalWrite(s_config->ioStatusLED, LOW);
 }
 
-bool bsp_isSecurityOccur(hwConfigType *s_config) {
+bool bsp_isSecurityOccur(deviceConfigType *s_config) {
     return !digitalRead(s_config->ioSecurity);
 }
 
-bool bsp_isHelpOccur(hwConfigType *s_config) {
+bool bsp_isHelpOccur(deviceConfigType *s_config) {
     return !digitalRead(s_config->ioHelp);
 }
 
-bool bsp_isWifiResetButtonPressed(hwConfigType *s_config) {
+bool bsp_isWifiResetButtonPressed(deviceConfigType *s_config) {
     return !digitalRead(s_config->ioWifiReset);
 }

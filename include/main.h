@@ -21,22 +21,18 @@
 
 typedef struct
 {
-    char *ssid;
-    char *pwd;
+    char *configAP;
     char *mqttBrokerUrl;
-    int mqttPort;
-
-}networkConfigType;
-
-typedef struct
-{
+    char *mqttPort;
+    char *mqttTopicHelp;
+    char *mqttTopicSecurity;
     int8_t ioHelp;
     int8_t ioSecurity;
     int8_t ioStatusLED;
     int8_t ioWifiReset;
     int baudrate;
 
-}hwConfigType;
+}deviceConfigType;
 
 enum WifiState {
     WIFI_DISCONNECTED,
@@ -70,17 +66,17 @@ extern "C" {
  *
  */
 char* copyString(const char* src, int size);
-bool loadConfigJSON(const char* filename, networkConfigType *s_network);
-bool saveConfigJSON(const char* filename, networkConfigType *s_network);
-void resetWifiConfig(networkConfigType *s_network);
+bool loadConfigJSON(const char* filename, deviceConfigType *s_config);
+bool saveConfigJSON(const char* filename, deviceConfigType *s_config);
+void resetWifiConfig(deviceConfigType *s_config);
 
-bool bsp_hwInit(hwConfigType *s_config); 
-void bsp_toggleStatusLED(hwConfigType *s_config);
-void bsp_turnOffStatusLED(hwConfigType *s_config);
-void bsp_turnOnStatusLED(hwConfigType *s_config);
-bool bsp_isSecurityOccur(hwConfigType *s_config);
-bool bsp_isHelpOccur(hwConfigType *s_config);
-bool bsp_isWifiResetButtonPressed(hwConfigType *s_config);
+bool bsp_hwInit(deviceConfigType *s_config); 
+void bsp_toggleStatusLED(deviceConfigType *s_config);
+void bsp_turnOffStatusLED(deviceConfigType *s_config);
+void bsp_turnOnStatusLED(deviceConfigType *s_config);
+bool bsp_isSecurityOccur(deviceConfigType *s_config);
+bool bsp_isHelpOccur(deviceConfigType *s_config);
+bool bsp_isWifiResetButtonPressed(deviceConfigType *s_config);
 #ifdef __cplusplus
 }
 #endif
