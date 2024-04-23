@@ -5,12 +5,19 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <ESP8266WiFi.h>
+#include <WiFiManager.h>
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
 #define IO_SECURITY     4
 #define IO_WIFI_RST     5
 #define IO_STATUS_LED   16
+#define THRESHOLD_ALARM_LOW_COUNT 10
+#define UART_BAUD 115200
+#define TASK_PERIOD_BLINKSTATUS 500
+#define TASK_PERIOD_ALARMCHECK 200
+#define TASK_PERIOD_WIFIMANAGEMENT 2000
+#define TASK_PERIOD_OTA 5000
 
 typedef struct
 {
@@ -39,9 +46,11 @@ enum WifiState {
 };
 typedef struct
 {
-    enum WifiState currentState = WIFI_DISCONNECTED;
+    enum WifiState wifiState = WIFI_DISCONNECTED;
+    int8_t securityLowCnt = 0;
+    int8_t helpLowCnt = 0;
 
-}wifiStateType;
+}deviceStateType;
 
 // Choose to use Serial.print() for debugging or not
 #if DEBUG == 1
@@ -62,9 +71,13 @@ extern "C" {
  */
 char* copyString(const char* src, int size);
 bool loadConfigJSON(const char* filename, networkConfigType *s_network);
+bool saveConfigJSON(const char* filename, networkConfigType *s_network);
+void resetWifiConfig(networkConfigType *s_network);
 
 bool bsp_hwInit(hwConfigType *s_config); 
 void bsp_toggleStatusLED(hwConfigType *s_config);
+void bsp_turnOffStatusLED(hwConfigType *s_config);
+void bsp_turnOnStatusLED(hwConfigType *s_config);
 bool bsp_isSecurityOccur(hwConfigType *s_config);
 bool bsp_isHelpOccur(hwConfigType *s_config);
 bool bsp_isWifiResetButtonPressed(hwConfigType *s_config);

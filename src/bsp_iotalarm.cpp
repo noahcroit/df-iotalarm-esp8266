@@ -11,11 +11,23 @@ bool bsp_hwInit(hwConfigType *s_config) {
 
     // Initialize UART
     Serial.begin(s_config->baudrate);
+
+    // WiFi as STA mode
+    WiFi.mode(WIFI_STA);
+
     return true;
 }
 
 void bsp_toggleStatusLED(hwConfigType *s_config) {
     digitalWrite(s_config->ioStatusLED, !digitalRead(s_config->ioStatusLED));
+}
+
+void bsp_turnOffStatusLED(hwConfigType *s_config) {
+    digitalWrite(s_config->ioStatusLED, HIGH);
+}
+
+void bsp_turnOnStatusLED(hwConfigType *s_config) {
+    digitalWrite(s_config->ioStatusLED, LOW);
 }
 
 bool bsp_isSecurityOccur(hwConfigType *s_config) {

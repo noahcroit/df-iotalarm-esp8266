@@ -36,8 +36,8 @@ private:
     bool isrun;
     unsigned long currentTick;
     int numberOfTasks;
-    PeriodTask taskArr[MAX_TASK_NUM];
 public:
+    PeriodTask taskArr[MAX_TASK_NUM];
     TimerScheduler();
     void addTask(PeriodTask task);
     bool isTaskReady(PeriodTask task);

@@ -5,9 +5,9 @@
 
 // Tasks
 void task_blinkStatusLED();
-void task_optoSignalCheck();
+void task_alarmCheck();
 void task_wifiManagement();
-void task_firmwareUpdate();
+void task_firmwareUpdateOTA();
 
 
 
@@ -20,10 +20,9 @@ TimerScheduler schd;
 const char* configFile = "/config.json";
 bool waitWifiConnection = false;
 bool isFirmwareUpdateRequest = false;
-networkConfigType s_network;
+networkConfigType s_networkConfig;
 hwConfigType s_hwConfig;
-wifiStateType wifiState;
- 
+deviceStateType dState;
 
 
 
@@ -33,23 +32,25 @@ void setup(){
     s_hwConfig.ioSecurity = IO_SECURITY; 
     s_hwConfig.ioStatusLED = IO_STATUS_LED;
     s_hwConfig.ioWifiReset = IO_WIFI_RST;
-    s_hwConfig.baudrate = 115200;
+    s_hwConfig.baudrate = UART_BAUD;
     bsp_hwInit(&s_hwConfig); 
 
     // Network Configuration from JSON file
-    loadConfigJSON(configFile, &s_network);
+    loadConfigJSON(configFile, &s_networkConfig);
     debugln("Loaded ssid: ");
-    debugln(s_network.ssid);
+    debugln(s_networkConfig.ssid);
     debugln("Loaded pwd: ");
-    debugln(s_network.pwd);
+    debugln(s_networkConfig.pwd);
  
     // Create Tasks
-    PeriodTask t1(500, &task_blinkStatusLED);
-    PeriodTask t2(200, &task_optoSignalCheck);
-    PeriodTask t3(3000, &task_wifiManagement);
+    PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
+    PeriodTask t2(TASK_PERIOD_ALARMCHECK, &task_alarmCheck);
+    PeriodTask t3(TASK_PERIOD_WIFIMANAGEMENT, &task_wifiManagement);
+    PeriodTask t4(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
     schd.addTask(t1);
     schd.addTask(t2);
     schd.addTask(t3);
+    schd.addTask(t4);
 }
 
 void loop(){
@@ -75,27 +76,38 @@ void task_blinkStatusLED() {
     bsp_toggleStatusLED(&s_hwConfig);
 }
 
-void task_optoSignalCheck() {
+void task_alarmCheck() {
+    // SECURITY alarm signal
     if (bsp_isSecurityOccur(&s_hwConfig)) {
-        // do something when SECURITY event occur
-        // send MQTT message, etc.
-        debugln("SECURITY detected!");
+        dState.securityLowCnt++;
+        if (dState.securityLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
+            // do something when SECURITY event occur
+            // send MQTT alarm message, etc.
+            debugln("SECURITY detected!");
+            dState.securityLowCnt = 0; //reset counter
+        }
     }
+    // HELP alarm signal
     if (bsp_isHelpOccur(&s_hwConfig)) {
-        // do something when HELP event occur
-        // send MQTT message, etc.
-        debugln("HELP detected!");
+        dState.helpLowCnt++;
+        if (dState.helpLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
+            // do something when HELP event occur
+            // send MQTT alarm message, etc.
+            debugln("HELP detected!");
+            dState.helpLowCnt = 0; //reset counter
+        }
     }
 }
 
 void task_wifiManagement() {
     // WiFi state machine
-    switch (wifiState.currentState) {
+    switch (dState.wifiState) {
         case WIFI_DISCONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
                 debugln("Connection WiFi...");
-                WiFi.begin(s_network.ssid, s_network.pwd);
-                wifiState.currentState = WIFI_CONNECTING;
+                //WiFi.begin(s_networkConfig.ssid, s_networkConfig.pwd);
+                WiFi.begin();
+                dState.wifiState = WIFI_CONNECTING;
             }
             break;
 
@@ -103,28 +115,32 @@ void task_wifiManagement() {
             if (WiFi.status() == WL_CONNECTED) {
                 debug("WiFi Connected, IP = ");
                 debugln(WiFi.localIP());
-                wifiState.currentState = WIFI_CONNECTED;
+                dState.wifiState = WIFI_CONNECTED;
             }
             break;
 
         case WIFI_CONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
-                wifiState.currentState = WIFI_DISCONNECTED;
+                dState.wifiState = WIFI_DISCONNECTED;
             }
             break;
 
         case WIFI_RESET:
-            //do WIFI reset with smartConfig.h
-            delay(5000);
-            wifiState.currentState = WIFI_DISCONNECTED;
+            debugln("WIFI Re-config......");
+            bsp_turnOnStatusLED(&s_hwConfig);
+            resetWifiConfig(&s_networkConfig);
+            bsp_turnOffStatusLED(&s_hwConfig);
+            dState.wifiState = WIFI_DISCONNECTED;
             break;
     }
     
     // check WiFi reset button
     if(bsp_isWifiResetButtonPressed(&s_hwConfig)) {
-        wifiState.currentState = WIFI_RESET;
+        // set period blinking task
+        dState.wifiState = WIFI_RESET;
     }
 }
 
-void task_firmwareUpdate() {
+void task_firmwareUpdateOTA() {
+    debugln("Check update firmware...");
 }
