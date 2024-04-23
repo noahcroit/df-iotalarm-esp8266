@@ -1,10 +1,10 @@
 {
-    "ssid": "WIFI_SSID",
-    "pwd": "WIFI_PWD",
+    "firmware_ver": "0.1",
+    "config_ap": "AP_NAME_FOR_CONFIG",
     "mqtt_broker": "BROKER_URL",
-    "mqtt_port": 1883,
-    "mqtt_topics": [
-    ],
-    "keepalive": 60
+    "mqtt_port": "1883",
+    "topic_help": "HELP",
+    "topic_security": "SECURITY",
+    "keepalive": "60"
 }
 
