@@ -33,6 +33,7 @@ void setup(){
     s_config.ioWifiReset = IO_WIFI_RST;
     s_config.baudrate = UART_BAUD;
     bsp_hwInit(&s_config); 
+    bsp_turnOffStatusLED(&s_config);
 
     // Netw Configuration from JSON file
     loadConfigJSON(configFile, &s_config);
@@ -68,11 +69,16 @@ void loop(){
 
 void task_blinkStatusLED() {
     debugln("********** task blink statue LED");
-    if (dState.wifiState == WIFI_CONNECTED) {
-        bsp_toggleStatusLED(&s_config);
+    if (dState.wifiState == WIFI_DISCONNECTED || dState.wifiState == WIFI_CONNECTING) {
+        bsp_turnOffStatusLED(&s_config);
     }
     if(dState.wifiState == WIFI_RESET) {
         bsp_turnOnStatusLED(&s_config);
+    }
+    if(dState.wifiState == WIFI_CONNECTED) {
+        bsp_turnOnStatusLED(&s_config);
+        delay(30);
+        bsp_turnOffStatusLED(&s_config);
     }
 }
 
@@ -82,7 +88,8 @@ void task_alarmCheck() {
         dState.securityLowCnt++;
         if (dState.securityLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
             // do something when SECURITY event occur
-            // send MQTT alarm message, etc.
+            // send MQTT alarm message here
+            //
             debugln("SECURITY detected!");
             dState.securityLowCnt = 0; //reset counter
         }
@@ -92,7 +99,8 @@ void task_alarmCheck() {
         dState.helpLowCnt++;
         if (dState.helpLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
             // do something when HELP event occur
-            // send MQTT alarm message, etc.
+            // send MQTT alarm message here
+            //
             debugln("HELP detected!");
             dState.helpLowCnt = 0; //reset counter
         }
@@ -112,7 +120,7 @@ void task_wifiManagement() {
 
         case WIFI_CONNECTING:
             if (WiFi.status() == WL_CONNECTED) {
-                debug("WiFi Connected, IP = ");
+                debug("WiFi Connected, IP=");
                 debugln(WiFi.localIP());
                 dState.wifiState = WIFI_CONNECTED;
             }
@@ -125,9 +133,16 @@ void task_wifiManagement() {
             break;
 
         case WIFI_RESET:
-            debugln("WIFI Re-config......");
-            resetWifiConfig(&s_config);
-            dState.wifiState = WIFI_DISCONNECTED;
+            bool res_reset;
+            debugln("WIFI Re-config...");
+            res_reset = resetWifiConfig(&s_config);
+            if (res_reset) {
+                debugln("Reset by itself for new WiFi config...");
+                ESP.restart();
+            }
+            else {
+                dState.wifiState = WIFI_DISCONNECTED;
+            }
             break;
     }
     

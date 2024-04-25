@@ -6,6 +6,7 @@
 #include <LittleFS.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
+#include <AsyncMqttClient.h>
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -14,10 +15,10 @@
 #define IO_STATUS_LED   16
 #define THRESHOLD_ALARM_LOW_COUNT 10
 #define UART_BAUD 115200
-#define TASK_PERIOD_BLINKSTATUS 500
-#define TASK_PERIOD_ALARMCHECK 200
+#define TASK_PERIOD_BLINKSTATUS 1000
+#define TASK_PERIOD_ALARMCHECK 100
 #define TASK_PERIOD_WIFIMANAGEMENT 2000
-#define TASK_PERIOD_OTA 5000
+#define TASK_PERIOD_OTA 3000
 
 typedef struct
 {
@@ -48,6 +49,12 @@ typedef struct
 
 }deviceStateType;
 
+enum AlarmType {
+    ALARM_HELP,
+    ALARM_SECURITY
+}
+typedef AlarmType alarmType;
+
 // Choose to use Serial.print() for debugging or not
 #if DEBUG == 1
 #define debug(x)    Serial.print(x)
@@ -68,7 +75,7 @@ extern "C" {
 char* copyString(const char* src, int size);
 bool loadConfigJSON(const char* filename, deviceConfigType *s_config);
 bool saveConfigJSON(const char* filename, deviceConfigType *s_config);
-void resetWifiConfig(deviceConfigType *s_config);
+bool resetWifiConfig(deviceConfigType *s_config);
 
 bool bsp_hwInit(deviceConfigType *s_config); 
 void bsp_toggleStatusLED(deviceConfigType *s_config);
