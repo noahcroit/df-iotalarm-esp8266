@@ -25,6 +25,8 @@ typedef struct
     char *configAP;
     char *mqttBrokerUrl;
     char *mqttPort;
+    char *mqttUser;
+    char *mqttPassword;
     char *mqttTopicHelp;
     char *mqttTopicSecurity;
     int8_t ioHelp;
@@ -41,19 +43,25 @@ enum WifiState {
     WIFI_CONNECTED,
     WIFI_RESET
 };
+enum MqttState {
+    MQTT_INIT,
+    MQTT_DISCONNECTED,
+    MQTT_CONNECTED
+};
 typedef struct
 {
     enum WifiState wifiState = WIFI_DISCONNECTED;
+    enum MqttState mqttState = MQTT_INIT;
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
+    char current_ssid[30];
 
 }deviceStateType;
 
 enum AlarmType {
     ALARM_HELP,
     ALARM_SECURITY
-}
-typedef AlarmType alarmType;
+};
 
 // Choose to use Serial.print() for debugging or not
 #if DEBUG == 1
@@ -72,18 +80,23 @@ extern "C" {
  *
  *
  */
-char* copyString(const char* src, int size);
-bool loadConfigJSON(const char* filename, deviceConfigType *s_config);
-bool saveConfigJSON(const char* filename, deviceConfigType *s_config);
-bool resetWifiConfig(deviceConfigType *s_config);
+char* copyString (const char* src, int size);
+bool loadConfigJSON (const char* filename, deviceConfigType *s_config);
+bool saveConfigJSON (const char* filename, deviceConfigType *s_config);
+bool resetWifiConfig (deviceConfigType *s_config);
 
-bool bsp_hwInit(deviceConfigType *s_config); 
-void bsp_toggleStatusLED(deviceConfigType *s_config);
-void bsp_turnOffStatusLED(deviceConfigType *s_config);
-void bsp_turnOnStatusLED(deviceConfigType *s_config);
-bool bsp_isSecurityOccur(deviceConfigType *s_config);
-bool bsp_isHelpOccur(deviceConfigType *s_config);
-bool bsp_isWifiResetButtonPressed(deviceConfigType *s_config);
+bool bsp_hwInit (deviceConfigType *s_config); 
+void bsp_toggleStatusLED (deviceConfigType *s_config);
+void bsp_turnOffStatusLED (deviceConfigType *s_config);
+void bsp_turnOnStatusLED (deviceConfigType *s_config);
+bool bsp_isSecurityOccur (deviceConfigType *s_config);
+bool bsp_isHelpOccur (deviceConfigType *s_config);
+bool bsp_isWifiResetButtonPressed (deviceConfigType *s_config);
+
+void mqtt_init (deviceConfigType *s_config);
+void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state);
+void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int type);
+
 #ifdef __cplusplus
 }
 #endif
