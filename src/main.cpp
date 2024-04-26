@@ -33,7 +33,7 @@ void setup(){
     s_config.ioStatusLED = IO_STATUS_LED;
     s_config.ioWifiReset = IO_WIFI_RST;
     s_config.baudrate = UART_BAUD;
-    s_config.mqttBrokerUrl = "broker.hivemq.com";
+    s_config.mqttBrokerUrl = "mqtt-dashboard.com";
     s_config.mqttPort = "1883";
     bsp_hwInit(&s_config); 
     bsp_turnOffStatusLED(&s_config);
@@ -48,11 +48,13 @@ void setup(){
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
     PeriodTask t2(TASK_PERIOD_ALARMCHECK, &task_alarmCheck);
     PeriodTask t3(TASK_PERIOD_WIFIMANAGEMENT, &task_wifiManagement);
-    PeriodTask t4(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
+    PeriodTask t4(TASK_PERIOD_MQTTMANAGEMENT, &task_mqttManagement);
+    PeriodTask t5(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
     schd.addTask(t1);
     schd.addTask(t2);
     schd.addTask(t3);
     schd.addTask(t4);
+    schd.addTask(t5);
 }
 
 void loop(){
@@ -78,7 +80,7 @@ void task_blinkStatusLED() {
     if (dState.wifiState == WIFI_DISCONNECTED || dState.wifiState == WIFI_CONNECTING) {
         bsp_turnOffStatusLED(&s_config);
     }
-    if(dState.wifiState == WIFI_RESET) {
+    if(dState.wifiState == WIFI_RECONFIG) {
         bsp_turnOnStatusLED(&s_config);
     }
     if(dState.wifiState == WIFI_CONNECTED) {
@@ -116,19 +118,32 @@ void task_alarmCheck() {
 void task_wifiManagement() {
     // WiFi management state machine
     switch (dState.wifiState) {
+        case WIFI_INIT:
+            debugln("WIFI param init, go to DISCONNECTED state first");
+            dState.wifiState = WIFI_DISCONNECTED;
+            break;
+
         case WIFI_DISCONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
-                debugln("Connect to previous WiFi AP...");
+                debugln("Attemp to connect to the previous WiFi AP...");
                 WiFi.begin();
                 dState.wifiState = WIFI_CONNECTING;
+                dState.wifiConnectAttemptCnt = 0;
             }
             break;
 
         case WIFI_CONNECTING:
             if (WiFi.status() == WL_CONNECTED) {
-                debug("WiFi Connected, IP=");
+                debug("WiFi Connected!, IP=");
                 debugln(WiFi.localIP());
                 dState.wifiState = WIFI_CONNECTED;
+            }
+            else {
+                dState.wifiConnectAttemptCnt++;
+                if (dState.wifiConnectAttemptCnt >= THRESHOLD_WIFI_CONNECT_ATTEMPT) {
+                    debugln("WiFi timeout");
+                    dState.wifiState = WIFI_DISCONNECTED;
+                }
             }
             break;
 
@@ -136,9 +151,12 @@ void task_wifiManagement() {
             if (WiFi.status() != WL_CONNECTED) {
                 dState.wifiState = WIFI_DISCONNECTED;
             }
+            else{
+                // Read WIFI param, RSSI etc
+            }
             break;
 
-        case WIFI_RESET:
+        case WIFI_RECONFIG:
             bool res_reset;
             debugln("WIFI Re-config...");
             res_reset = resetWifiConfig(&s_config);
@@ -155,7 +173,7 @@ void task_wifiManagement() {
     // check WiFi reset button
     if(bsp_isWifiResetButtonPressed(&s_config)) {
         // set period blinking task
-        dState.wifiState = WIFI_RESET;
+        dState.wifiState = WIFI_RECONFIG;
     }
 }
 

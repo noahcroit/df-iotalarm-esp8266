@@ -14,10 +14,12 @@
 #define IO_WIFI_RST     5
 #define IO_STATUS_LED   16
 #define THRESHOLD_ALARM_LOW_COUNT 10
+#define THRESHOLD_WIFI_CONNECT_ATTEMPT 10
 #define UART_BAUD 115200
 #define TASK_PERIOD_BLINKSTATUS 1000
 #define TASK_PERIOD_ALARMCHECK 100
 #define TASK_PERIOD_WIFIMANAGEMENT 2000
+#define TASK_PERIOD_MQTTMANAGEMENT 2000
 #define TASK_PERIOD_OTA 3000
 
 typedef struct
@@ -38,10 +40,11 @@ typedef struct
 }deviceConfigType;
 
 enum WifiState {
+    WIFI_INIT,
     WIFI_DISCONNECTED,
     WIFI_CONNECTING,
     WIFI_CONNECTED,
-    WIFI_RESET
+    WIFI_RECONFIG
 };
 enum MqttState {
     MQTT_INIT,
@@ -50,8 +53,9 @@ enum MqttState {
 };
 typedef struct
 {
-    enum WifiState wifiState = WIFI_DISCONNECTED;
+    enum WifiState wifiState = WIFI_INIT;
     enum MqttState mqttState = MQTT_INIT;
+    int8_t wifiConnectAttemptCnt = 0;
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
     char current_ssid[30];
