@@ -7,6 +7,7 @@
 void task_blinkStatusLED();
 void task_alarmCheck();
 void task_wifiManagement();
+void task_mqttManagement();
 void task_firmwareUpdateOTA();
 
 
@@ -32,11 +33,16 @@ void setup(){
     s_config.ioStatusLED = IO_STATUS_LED;
     s_config.ioWifiReset = IO_WIFI_RST;
     s_config.baudrate = UART_BAUD;
+    s_config.mqttBrokerUrl = "broker.hivemq.com";
+    s_config.mqttPort = "1883";
     bsp_hwInit(&s_config); 
     bsp_turnOffStatusLED(&s_config);
 
-    // Netw Configuration from JSON file
+    // Device Configuration from JSON file
     loadConfigJSON(configFile, &s_config);
+
+    // MQTT Initialization
+    mqtt_init (&s_config);
  
     // Create Tasks
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
@@ -108,7 +114,7 @@ void task_alarmCheck() {
 }
 
 void task_wifiManagement() {
-    // WiFi state machine
+    // WiFi management state machine
     switch (dState.wifiState) {
         case WIFI_DISCONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
@@ -150,6 +156,18 @@ void task_wifiManagement() {
     if(bsp_isWifiResetButtonPressed(&s_config)) {
         // set period blinking task
         dState.wifiState = WIFI_RESET;
+    }
+}
+
+void task_mqttManagement() {
+    // MQTT management state machine
+    switch (dState.mqttState) {
+        case MQTT_INIT:
+            break;
+        case MQTT_DISCONNECTED:
+            break;
+        case MQTT_CONNECTED:
+            break;
     }
 }
 

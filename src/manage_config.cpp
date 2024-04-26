@@ -6,14 +6,14 @@ WiFiManager wm;
 
 
 
-char* copyString(const char* src, int size) {
+char* copyString (const char* src, int size) {
     char* s;
     s = (char *)malloc(size * sizeof(char));
     strcpy(s, src);
     return (char *)s;
 }
 
-bool loadConfigJSON(const char* filename, deviceConfigType *s_config) {
+bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     if (!LittleFS.begin()) {
         debugln("Failed to mount file system");
         return false;
@@ -42,7 +42,7 @@ bool loadConfigJSON(const char* filename, deviceConfigType *s_config) {
     return true;
 }
 
-bool saveConfigJSON(const char* filename, deviceConfigType *s_config) {
+bool saveConfigJSON (const char* filename, deviceConfigType *s_config) {
     JsonDocument doc;
     doc["config_ap"] = s_config->configAP;
     doc["mqtt_broker"] = s_config->mqttBrokerUrl;
@@ -59,7 +59,7 @@ bool saveConfigJSON(const char* filename, deviceConfigType *s_config) {
     return true;
 }
 
-bool resetWifiConfig(deviceConfigType *s_config) {
+bool resetWifiConfig (deviceConfigType *s_config) {
     char mqtt_broker[40] = "Broker URL";
     char mqtt_port[10] = "Port";
     
