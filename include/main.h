@@ -58,7 +58,9 @@ typedef struct
     int8_t wifiConnectAttemptCnt = 0;
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
-    char current_ssid[30];
+    String ssid;
+    IPAddress ip;
+    int rssi;
 
 }deviceStateType;
 

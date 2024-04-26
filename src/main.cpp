@@ -134,8 +134,15 @@ void task_wifiManagement() {
 
         case WIFI_CONNECTING:
             if (WiFi.status() == WL_CONNECTED) {
-                debug("WiFi Connected!, IP=");
-                debugln(WiFi.localIP());
+                dState.ssid = WiFi.SSID();
+                dState.rssi = WiFi.RSSI();
+                dState.ip = WiFi.localIP();
+                debugln("WiFi Connected!");
+                debug(dState.ssid);
+                debug(", ");
+                debugln(dState.ip);
+                debug("RSSI = ");
+                debugln(dState.rssi);
                 dState.wifiState = WIFI_CONNECTED;
             }
             else {
@@ -153,6 +160,7 @@ void task_wifiManagement() {
             }
             else{
                 // Read WIFI param, RSSI etc
+                dState.rssi = WiFi.RSSI();
             }
             break;
 
