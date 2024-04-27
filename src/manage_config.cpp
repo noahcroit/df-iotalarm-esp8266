@@ -6,13 +6,6 @@ WiFiManager wm;
 
 
 
-char* copyString (const char* src, int size) {
-    char* s;
-    s = (char *)malloc(size * sizeof(char));
-    strcpy(s, src);
-    return (char *)s;
-}
-
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     if (!LittleFS.begin()) {
         debugln("Failed to mount file system");
@@ -23,39 +16,49 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
         debugln("Failed to open config file");
         return false;
     }
-    JsonDocument doc;
-    auto error = deserializeJson(doc, configFile);
+    
+    JsonDocument jsonDoc;
+    auto error = deserializeJson(jsonDoc, configFile);
     if (error) {
         debugln("Failed to parse config file");
         return false;
     }
-    const char* configAP = doc["config_ap"];
-    const char* broker = doc["mqtt_broker"];
-    const char* port = doc["mqtt_port"];
-    const char* help = doc["topic_help"];
-    const char* security = doc["topic_security"];
-    s_config->configAP = copyString(configAP, 20);
-    s_config->mqttBrokerUrl = copyString(broker, 20);
-    s_config->mqttPort = copyString(port, 20);
-    s_config->mqttTopicHelp = copyString(help, 20);
-    s_config->mqttTopicSecurity = copyString(security, 20);
+    const char *configAP = jsonDoc["config_ap"];
+    const char *mqttBrokerUrl = jsonDoc["mqtt_broker"];
+    int mqttPort = jsonDoc["mqtt_port"];
+    const char *mqttTopicHelp = jsonDoc["topic_help"];
+    const char *mqttTopicSecurity = jsonDoc["topic_security"];
+    
+    strcpy(s_config->configAP, configAP);
+    strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
+    strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
+    strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
+    s_config->mqttPort = mqttPort;
+
+    debugln("******************* Load config ********************");
+    debugln(s_config->configAP);
+    debugln(s_config->mqttBrokerUrl);
+    debugln(s_config->mqttPort);
+    debugln(s_config->mqttTopicHelp);
+    debugln(s_config->mqttTopicSecurity);
     return true;
 }
 
 bool saveConfigJSON (const char* filename, deviceConfigType *s_config) {
-    JsonDocument doc;
-    doc["config_ap"] = s_config->configAP;
-    doc["mqtt_broker"] = s_config->mqttBrokerUrl;
-    doc["mqtt_port"] = s_config->mqttPort;
-    doc["topic_help"] = s_config->mqttTopicHelp;
-    doc["topic_security"] = s_config->mqttTopicSecurity;
-
+    JsonDocument jsonDoc;
+    /*
+    jsonDoc["config_ap"] = s_config->configAP;
+    jsonDoc["mqtt_broker"] = s_config->mqttBrokerUrl;
+    jsonDoc["mqtt_port"] = String(s_config->mqttPort);
+    jsonDoc["topic_help"] = s_config->mqttTopicHelp;
+    jsonDoc["topic_security"] = s_config->mqttTopicSecurity;
+    */
     File configFile = LittleFS.open(filename, "w");
     if (!configFile) {
         debugln("Failed to open config file for writing");
         return false;
     }
-    serializeJson(doc, configFile);
+    serializeJson(jsonDoc, configFile);
     return true;
 }
 
