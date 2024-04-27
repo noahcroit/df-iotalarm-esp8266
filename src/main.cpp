@@ -103,8 +103,10 @@ void task_alarmCheck() {
             debugln("SECURITY detected!");
             // do something when SECURITY event occur
             // send MQTT alarm message here
-            mqtt_sendAlarm (&s_config, ALARM_SECURITY);
-            dState.securityLowCnt = 0; //reset counter
+            if (WiFi.status() == WL_CONNECTED) {
+                mqtt_sendAlarm (&s_config, ALARM_SECURITY);
+                dState.securityLowCnt = 0; //reset counter
+            }
         }
     }
     // HELP alarm signal
@@ -114,8 +116,10 @@ void task_alarmCheck() {
             debugln("HELP detected!");
             // do something when HELP event occur
             // send MQTT alarm message here
-            mqtt_sendAlarm (&s_config, ALARM_HELP);
-            dState.helpLowCnt = 0; //reset counter
+            if (WiFi.status() == WL_CONNECTED) {
+                mqtt_sendAlarm (&s_config, ALARM_HELP);
+                dState.helpLowCnt = 0; //reset counter
+            }
         }
     }
 }
@@ -195,17 +199,26 @@ void task_mqttManagement() {
     switch (dState.mqttState) {
         case MQTT_INIT:
             debugln("MQTT param init...");
-            mqtt_init(&s_config);
+            mqtt_init(&s_config, &dState);
             dState.mqttState = MQTT_DISCONNECTED;
             break;
         case MQTT_DISCONNECTED:
             if (WiFi.status() == WL_CONNECTED) {
                 debugln("Attempt to connect to MQTT broker...");
+                dState.alreadySubscribe = false;
                 mqtt_connect(&s_config);
-                dState.mqttState = MQTT_CONNECTED;
+                dState.mqttState = MQTT_CONNECTING;
             }
             break;
+        case MQTT_CONNECTING:
+            break;
         case MQTT_CONNECTED:
+            if (!dState.alreadySubscribe) {
+                debugln("MQTT connected successfully!");
+                debugln("Start subscribe OTA topic");
+                mqtt_subscribeOtaRequest(&s_config);
+                dState.alreadySubscribe = true;
+            }
             break;
     }
 }

@@ -3,29 +3,58 @@
 
 
 AsyncMqttClient mqttClient;
+int8_t *pMqttState;
 
 
 
 void onMqttConnect(bool sessionPresent) {
-    debugln("MQTT connected successfully!");
-    debug("Session present: ");
-    debugln(sessionPresent);
+    *pMqttState = MQTT_CONNECTED; 
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
     debugln("Disconnected from MQTT.");
+    *pMqttState = MQTT_DISCONNECTED; 
 }
 
-void mqtt_init (deviceConfigType *s_config) {
+void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+    Serial.println("Publish received.");
+    Serial.print("  topic: ");
+    Serial.println(topic);
+    Serial.print("  qos: ");
+    Serial.println(properties.qos);
+    Serial.print("  dup: ");
+    Serial.println(properties.dup);
+    Serial.print("  retain: ");
+    Serial.println(properties.retain);
+    Serial.print("  len: ");
+    Serial.println(len);
+    Serial.print("  index: ");
+    Serial.println(index);
+    Serial.print("  total: ");
+    Serial.println(total);
+}
+
+void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
+    debugln("Subscribe acknowledged.");
+    debug("  packetId: ");
+    debugln(packetId);
+    debug("  qos: ");
+    debugln(qos);
+}
+
+void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
     // Set broker URL, port etc.
-    debug("set MQTT broker to ");
+    debug("MQTT Init, set MQTT broker to ");
     debug(s_config->mqttBrokerUrl);
     debug(", port=");
     debugln(s_config->mqttPort);
-    // mqttClient.setCredentials(s_config->mqttUser, s_config->mqttPassword);
-    mqttClient.setServer(s_config->mqttBrokerUrl, s_config->mqttPort);
+    pMqttState = &(s_state->mqttState);
     mqttClient.onConnect(onMqttConnect);
     mqttClient.onDisconnect(onMqttDisconnect);
+    mqttClient.onMessage(onMqttMessage);
+    mqttClient.onSubscribe(onMqttSubscribe);
+    // mqttClient.setCredentials(s_config->mqttUser, s_config->mqttPassword);
+    mqttClient.setServer(s_config->mqttBrokerUrl, s_config->mqttPort);
 }
 
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state) {
@@ -56,10 +85,14 @@ void mqtt_sendAlarm (deviceConfigType *s_config, int type) {
     }
     else if (type == ALARM_SECURITY) {
         debugln("Sending SECURITY");
-        mqttClient.publish(s_config->mqttTopicSecurity, 0, false, "2");
+        mqttClient.publish(s_config->mqttTopicSecurity, 0, false, "1");
     }
 }
- 
+
+void mqtt_subscribeOtaRequest (deviceConfigType *s_config) {
+    mqttClient.subscribe(s_config->mqttTopicOta, 0);
+}
+
 void mqtt_connect (deviceConfigType *s_config) {
     // send MQTT connect to broker
     debugln("Connecting to MQTT broker");

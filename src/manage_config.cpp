@@ -28,11 +28,13 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     int mqttPort = jsonDoc["mqtt_port"];
     const char *mqttTopicHelp = jsonDoc["topic_help"];
     const char *mqttTopicSecurity = jsonDoc["topic_security"];
+    const char *mqttTopicOta = jsonDoc["topic_ota"];
     
     strcpy(s_config->configAP, configAP);
     strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
     strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
     strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
+    strcpy(s_config->mqttTopicOta, mqttTopicOta);
     s_config->mqttPort = mqttPort;
 
     debugln("******************* Load config ********************");

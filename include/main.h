@@ -31,6 +31,7 @@ typedef struct
     char mqttPassword[20];
     char mqttTopicHelp[40];
     char mqttTopicSecurity[40];
+    char mqttTopicOta[40];
     int8_t ioHelp;
     int8_t ioSecurity;
     int8_t ioStatusLED;
@@ -49,15 +50,17 @@ enum WifiState {
 enum MqttState {
     MQTT_INIT,
     MQTT_DISCONNECTED,
+    MQTT_CONNECTING,
     MQTT_CONNECTED
 };
 typedef struct
 {
-    enum WifiState wifiState = WIFI_INIT;
-    enum MqttState mqttState = MQTT_INIT;
+    int8_t wifiState = WIFI_INIT;
+    int8_t mqttState = MQTT_INIT;
     int8_t wifiConnectAttemptCnt = 0;
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
+    bool alreadySubscribe = false;
     String ssid;
     IPAddress ip;
     int rssi;
@@ -98,9 +101,10 @@ bool bsp_isSecurityOccur (deviceConfigType *s_config);
 bool bsp_isHelpOccur (deviceConfigType *s_config);
 bool bsp_isWifiResetButtonPressed (deviceConfigType *s_config);
 
-void mqtt_init (deviceConfigType *s_config);
+void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state);
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state);
 void mqtt_sendAlarm (deviceConfigType *s_config, int type);
+void mqtt_subscribeOtaRequest (deviceConfigType *s_config);
 void mqtt_connect (deviceConfigType *s_config);
 
 #ifdef __cplusplus
