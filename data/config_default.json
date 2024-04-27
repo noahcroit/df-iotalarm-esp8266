@@ -5,6 +5,7 @@
     "mqtt_port": "1883",
     "topic_help": "HELP",
     "topic_security": "SECURITY",
+    "topic_ota": "OTA",
     "keepalive": "60"
 }
 
