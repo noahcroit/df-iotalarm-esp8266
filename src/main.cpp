@@ -33,16 +33,21 @@ void setup(){
     s_config.ioStatusLED = IO_STATUS_LED;
     s_config.ioWifiReset = IO_WIFI_RST;
     s_config.baudrate = UART_BAUD;
-    s_config.mqttBrokerUrl = "mqtt-dashboard.com";
-    s_config.mqttPort = "1883";
     bsp_hwInit(&s_config); 
     bsp_turnOffStatusLED(&s_config);
 
     // Device Configuration from JSON file
     loadConfigJSON(configFile, &s_config);
+    debugln("******************* Load config ********************");
+    debugln(s_config.configAP);
+    debugln(s_config.mqttBrokerUrl);
+    debugln(s_config.mqttPort);
+    debugln(s_config.mqttTopicHelp);
+    debugln(s_config.mqttTopicSecurity);
+    debugln("****************************************************");
+    delay(3000);
 
     // MQTT Initialization
-    mqtt_init (&s_config);
  
     // Create Tasks
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
@@ -95,10 +100,10 @@ void task_alarmCheck() {
     if (bsp_isSecurityOccur(&s_config)) {
         dState.securityLowCnt++;
         if (dState.securityLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
+            debugln("SECURITY detected!");
             // do something when SECURITY event occur
             // send MQTT alarm message here
-            //
-            debugln("SECURITY detected!");
+            mqtt_sendAlarm (&s_config, ALARM_SECURITY);
             dState.securityLowCnt = 0; //reset counter
         }
     }
@@ -106,10 +111,10 @@ void task_alarmCheck() {
     if (bsp_isHelpOccur(&s_config)) {
         dState.helpLowCnt++;
         if (dState.helpLowCnt > THRESHOLD_ALARM_LOW_COUNT) {
+            debugln("HELP detected!");
             // do something when HELP event occur
             // send MQTT alarm message here
-            //
-            debugln("HELP detected!");
+            mqtt_sendAlarm (&s_config, ALARM_HELP);
             dState.helpLowCnt = 0; //reset counter
         }
     }
@@ -189,8 +194,16 @@ void task_mqttManagement() {
     // MQTT management state machine
     switch (dState.mqttState) {
         case MQTT_INIT:
+            debugln("MQTT param init...");
+            mqtt_init(&s_config);
+            dState.mqttState = MQTT_DISCONNECTED;
             break;
         case MQTT_DISCONNECTED:
+            if (WiFi.status() == WL_CONNECTED) {
+                debugln("Attempt to connect to MQTT broker...");
+                mqtt_connect(&s_config);
+                dState.mqttState = MQTT_CONNECTED;
+            }
             break;
         case MQTT_CONNECTED:
             break;

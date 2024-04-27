@@ -24,13 +24,13 @@
 
 typedef struct
 {
-    char *configAP;
-    char *mqttBrokerUrl;
-    char *mqttPort;
-    char *mqttUser;
-    char *mqttPassword;
-    char *mqttTopicHelp;
-    char *mqttTopicSecurity;
+    char configAP[40];
+    char mqttBrokerUrl[40];
+    int mqttPort;
+    char mqttUser[20];
+    char mqttPassword[20];
+    char mqttTopicHelp[40];
+    char mqttTopicSecurity[40];
     int8_t ioHelp;
     int8_t ioSecurity;
     int8_t ioStatusLED;
@@ -86,7 +86,6 @@ extern "C" {
  *
  *
  */
-char* copyString (const char* src, int size);
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config);
 bool saveConfigJSON (const char* filename, deviceConfigType *s_config);
 bool resetWifiConfig (deviceConfigType *s_config);
@@ -101,7 +100,8 @@ bool bsp_isWifiResetButtonPressed (deviceConfigType *s_config);
 
 void mqtt_init (deviceConfigType *s_config);
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state);
-void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int type);
+void mqtt_sendAlarm (deviceConfigType *s_config, int type);
+void mqtt_connect (deviceConfigType *s_config);
 
 #ifdef __cplusplus
 }
