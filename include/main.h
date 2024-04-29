@@ -9,6 +9,7 @@
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
+#define FIRMWARE_VERSION "0.1"
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -22,12 +23,14 @@
 #define TASK_PERIOD_ALARMCHECK 100
 #define TASK_PERIOD_WIFIMANAGEMENT 2000
 #define TASK_PERIOD_MQTTMANAGEMENT 2000
-#define TASK_PERIOD_UPDATEINFO 60000
+#define TASK_PERIOD_UPDATEINFO 180000
+#define TASK_PERIOD_UPDATE_TIMESTAMP 60000
 #define TASK_PERIOD_OTA 3000
-#define NTP_SERVER_URL "pool.ntp.org"
+#define NTP_OFFSET_TH 7*60*60
 
 typedef struct
 {
+    char firmwareVer[6];
     char configAP[40];
     char mqttBrokerUrl[40];
     int mqttPort;
@@ -35,7 +38,9 @@ typedef struct
     char mqttPassword[20];
     char mqttTopicHelp[40];
     char mqttTopicSecurity[40];
+    char mqttTopicInfo[40];
     char mqttTopicOta[40];
+    char ntpServer[20];
     int8_t ioHelp;
     int8_t ioSecurity;
     int8_t ioStatusLED;
@@ -69,6 +74,8 @@ typedef struct
     IPAddress ip;
     int rssi;
     uint32_t chipId;
+    String timestamp;
+    unsigned long timestampEpoch;
 
 }deviceStateType;
 
@@ -112,6 +119,9 @@ void mqtt_sendAlarm (deviceConfigType *s_config, int type);
 void mqtt_subscribeOtaRequest (deviceConfigType *s_config);
 void mqtt_connect (deviceConfigType *s_config);
 
+void timestamp_ntpInit(deviceConfigType *s_config, deviceStateType *s_state);
+void timestamp_start(deviceStateType *s_state);
+void timestamp_updateRequest(deviceStateType *s_state);
 #ifdef __cplusplus
 }
 #endif

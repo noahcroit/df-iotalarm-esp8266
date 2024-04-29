@@ -10,6 +10,7 @@ void task_wifiManagement();
 void task_mqttManagement();
 void task_updateInfo();
 void task_firmwareUpdateOTA();
+void task_updateTimestamp();
 
 
 
@@ -43,12 +44,20 @@ void setup(){
     // Device Configuration from JSON file
     loadConfigJSON(configFile, &s_config);
     debugln("******************* Load config ********************");
+    debugln(s_config.firmwareVer);
     debugln(s_config.configAP);
     debugln(s_config.mqttBrokerUrl);
     debugln(s_config.mqttPort);
     debugln(s_config.mqttTopicHelp);
     debugln(s_config.mqttTopicSecurity);
+    debugln(s_config.mqttTopicInfo);
+    debugln(s_config.mqttTopicOta);
+    debugln(s_config.ntpServer);
     debugln("****************************************************");
+    
+    // NTP Timestamp Initialize
+    timestamp_ntpInit(&s_config, &dState);
+    
     delay(3000);
 
     // Create Tasks
@@ -58,12 +67,15 @@ void setup(){
     PeriodTask t4(TASK_PERIOD_MQTTMANAGEMENT, &task_mqttManagement);
     PeriodTask t5(TASK_PERIOD_UPDATEINFO, &task_updateInfo);
     PeriodTask t6(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
+    PeriodTask t7(TASK_PERIOD_UPDATE_TIMESTAMP, &task_updateTimestamp);
+    
     schd.addTask(t1);
     schd.addTask(t2);
     schd.addTask(t3);
     schd.addTask(t4);
     schd.addTask(t5);
     schd.addTask(t6);
+    schd.addTask(t7);
 }
 
 void loop(){
@@ -157,6 +169,7 @@ void task_wifiManagement() {
                 debug("RSSI = ");
                 debugln(dState.rssi);
                 dState.wifiState = WIFI_CONNECTED;
+                timestamp_start(&dState);
             }
             else {
                 dState.wifiConnectAttemptCnt++;
@@ -228,20 +241,9 @@ void task_mqttManagement() {
 }
 
 void task_updateInfo() {
-    JsonDocument infoDoc;
-    char payload[100];
     debugln("update info of device (SSID, IP address, RSSI etc)");
-    if (dState.wifiState == WIFI_CONNECTED) {
-
-        
-        // pack device's info into JSON string
-        infoDoc["ssid"] = dState.ssid;
-        infoDoc["rssi"] = dState.rssi;
-        infoDoc["ip"] = dState.ip;
-        serializeJson(infoDoc, payload, sizeof(payload));
-
-        // send JSON string to MQTT
-        debugln(payload);
+    if (dState.wifiState == WIFI_CONNECTED && dState.mqttState == MQTT_CONNECTED) {
+        mqtt_sendDeviceState(&s_config, &dState);
     }
     else {
         debugln("couldn't send update, device is offline");
@@ -251,3 +253,10 @@ void task_updateInfo() {
 void task_firmwareUpdateOTA() {
     debugln("Check update firmware...");
 }
+
+void task_updateTimestamp() {
+    timestamp_updateRequest(&dState); 
+    debug("Update time from NTP sever, timestamp=");
+    debugln(dState.timestamp);
+}
+
