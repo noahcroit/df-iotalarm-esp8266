@@ -17,21 +17,21 @@ void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 }
 
 void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-    Serial.println("Publish received.");
-    Serial.print("  topic: ");
-    Serial.println(topic);
-    Serial.print("  qos: ");
-    Serial.println(properties.qos);
-    Serial.print("  dup: ");
-    Serial.println(properties.dup);
-    Serial.print("  retain: ");
-    Serial.println(properties.retain);
-    Serial.print("  len: ");
-    Serial.println(len);
-    Serial.print("  index: ");
-    Serial.println(index);
-    Serial.print("  total: ");
-    Serial.println(total);
+    debugln("Publish received.");
+    debug("  topic: ");
+    debugln(topic);
+    debug("  qos: ");
+    debugln(properties.qos);
+    debug("  dup: ");
+    debugln(properties.dup);
+    debug("  retain: ");
+    debugln(properties.retain);
+    debug("  len: ");
+    debugln(len);
+    debug("  index: ");
+    debugln(index);
+    debug("  total: ");
+    debugln(total);
 }
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
@@ -58,23 +58,19 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
 }
 
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state) {
+    JsonDocument doc;
+    char payload[100];
     if (s_state->wifiState == WIFI_CONNECTED) {
         // Apply Json parse to device's state
-        JsonDocument doc;
-        /*
-        doc["id"] = deviceId;
-	    doc["ip"] = WiFi.localIP().toString();
-	    doc["rssi"] = WiFi.RSSI();
-	    doc["ssid"] = WiFi.SSID();
 	    doc["v"] = FIRMWARE_VERSION;
-        doc["status"] = true;
-        String json = String();
-        serializeJson(doc, json);
-        */
+        doc["ssid"] = s_state->ssid;
+        doc["rssi"] = s_state->rssi;
+        doc["ip"] = s_state->ip;
+        serializeJson(doc, payload, sizeof(payload));
         // MQTT connect
         //
         // MQTT publish
-        //
+        mqttClient.publish(s_config->mqttTopicInfo, 0, false, payload);
     }
 }
 

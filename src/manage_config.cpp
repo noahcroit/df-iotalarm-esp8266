@@ -23,26 +23,26 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
         debugln("Failed to parse config file");
         return false;
     }
+    const char *firmwareVer = jsonDoc["firmware_ver"];
     const char *configAP = jsonDoc["config_ap"];
     const char *mqttBrokerUrl = jsonDoc["mqtt_broker"];
     int mqttPort = jsonDoc["mqtt_port"];
     const char *mqttTopicHelp = jsonDoc["topic_help"];
     const char *mqttTopicSecurity = jsonDoc["topic_security"];
+    const char *mqttTopicInfo = jsonDoc["topic_info"];
     const char *mqttTopicOta = jsonDoc["topic_ota"];
+    const char *ntpServer = jsonDoc["ntp_server"];
     
+    strcpy(s_config->firmwareVer, firmwareVer);
     strcpy(s_config->configAP, configAP);
     strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
     strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
     strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
+    strcpy(s_config->mqttTopicInfo, mqttTopicInfo);
     strcpy(s_config->mqttTopicOta, mqttTopicOta);
+    strcpy(s_config->ntpServer, ntpServer);
     s_config->mqttPort = mqttPort;
 
-    debugln("******************* Load config ********************");
-    debugln(s_config->configAP);
-    debugln(s_config->mqttBrokerUrl);
-    debugln(s_config->mqttPort);
-    debugln(s_config->mqttTopicHelp);
-    debugln(s_config->mqttTopicSecurity);
     return true;
 }
 
