@@ -1,11 +1,13 @@
 {
     "firmware_ver": "0.1",
-    "config_ap": "AP_NAME_FOR_CONFIG",
-    "mqtt_broker": "BROKER_URL",
+    "config_ap": "DF IoT-AlarmBox",
+    "mqtt_broker": "broker.hivemq.com",
     "mqtt_port": "1883",
-    "topic_help": "HELP",
-    "topic_security": "SECURITY",
-    "topic_ota": "OTA",
+    "topic_help": "iotalarm/help",
+    "topic_security": "iotalarm/security",
+    "topic_info": "iotalarm/info",
+    "topic_ota": "iotalarm/ota",
+    "ntp_server": "pool.ntp.org",
     "keepalive": "60"
 }
 
