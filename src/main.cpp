@@ -8,6 +8,7 @@ void task_blinkStatusLED();
 void task_alarmCheck();
 void task_wifiManagement();
 void task_mqttManagement();
+void task_updateInfo();
 void task_firmwareUpdateOTA();
 
 
@@ -27,6 +28,9 @@ deviceStateType dState;
 
 
 void setup(){
+    // get chip ID
+    dState.chipId = ESP.getChipId();
+
     // Hardware Initialize
     s_config.ioHelp = IO_HELP; 
     s_config.ioSecurity = IO_SECURITY; 
@@ -47,19 +51,19 @@ void setup(){
     debugln("****************************************************");
     delay(3000);
 
-    // MQTT Initialization
- 
     // Create Tasks
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
     PeriodTask t2(TASK_PERIOD_ALARMCHECK, &task_alarmCheck);
     PeriodTask t3(TASK_PERIOD_WIFIMANAGEMENT, &task_wifiManagement);
     PeriodTask t4(TASK_PERIOD_MQTTMANAGEMENT, &task_mqttManagement);
-    PeriodTask t5(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
+    PeriodTask t5(TASK_PERIOD_UPDATEINFO, &task_updateInfo);
+    PeriodTask t6(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
     schd.addTask(t1);
     schd.addTask(t2);
     schd.addTask(t3);
     schd.addTask(t4);
     schd.addTask(t5);
+    schd.addTask(t6);
 }
 
 void loop(){
@@ -220,6 +224,27 @@ void task_mqttManagement() {
                 dState.alreadySubscribe = true;
             }
             break;
+    }
+}
+
+void task_updateInfo() {
+    JsonDocument infoDoc;
+    char payload[100];
+    debugln("update info of device (SSID, IP address, RSSI etc)");
+    if (dState.wifiState == WIFI_CONNECTED) {
+
+        
+        // pack device's info into JSON string
+        infoDoc["ssid"] = dState.ssid;
+        infoDoc["rssi"] = dState.rssi;
+        infoDoc["ip"] = dState.ip;
+        serializeJson(infoDoc, payload, sizeof(payload));
+
+        // send JSON string to MQTT
+        debugln(payload);
+    }
+    else {
+        debugln("couldn't send update, device is offline");
     }
 }
 

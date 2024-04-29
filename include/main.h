@@ -7,6 +7,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <AsyncMqttClient.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -20,7 +22,9 @@
 #define TASK_PERIOD_ALARMCHECK 100
 #define TASK_PERIOD_WIFIMANAGEMENT 2000
 #define TASK_PERIOD_MQTTMANAGEMENT 2000
+#define TASK_PERIOD_UPDATEINFO 60000
 #define TASK_PERIOD_OTA 3000
+#define NTP_SERVER_URL "pool.ntp.org"
 
 typedef struct
 {
@@ -64,6 +68,7 @@ typedef struct
     String ssid;
     IPAddress ip;
     int rssi;
+    uint32_t chipId;
 
 }deviceStateType;
 

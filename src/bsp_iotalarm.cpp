@@ -41,3 +41,4 @@ bool bsp_isHelpOccur (deviceConfigType *s_config) {
 bool bsp_isWifiResetButtonPressed (deviceConfigType *s_config) {
     return !digitalRead(s_config->ioWifiReset);
 }
+
