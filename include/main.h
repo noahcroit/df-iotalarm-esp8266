@@ -74,6 +74,7 @@ typedef struct
     IPAddress ip;
     int rssi;
     uint32_t chipId;
+    String uid;
     String timestamp;
     unsigned long timestampEpoch;
 
@@ -115,7 +116,7 @@ bool bsp_isWifiResetButtonPressed (deviceConfigType *s_config);
 
 void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state);
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state);
-void mqtt_sendAlarm (deviceConfigType *s_config, int type);
+void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int type);
 void mqtt_subscribeOtaRequest (deviceConfigType *s_config);
 void mqtt_connect (deviceConfigType *s_config);
 

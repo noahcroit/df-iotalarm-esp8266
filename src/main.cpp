@@ -119,10 +119,10 @@ void task_alarmCheck() {
             debugln("SECURITY detected!");
             // do something when SECURITY event occur
             // send MQTT alarm message here
-            if (WiFi.status() == WL_CONNECTED) {
-                mqtt_sendAlarm (&s_config, ALARM_SECURITY);
-                dState.securityLowCnt = 0; //reset counter
+            if (WiFi.status() == WL_CONNECTED && dState.mqttState == MQTT_CONNECTED) {
+                mqtt_sendAlarm (&s_config, &dState, ALARM_SECURITY);
             }
+            dState.securityLowCnt = 0; //reset counter
         }
     }
     // HELP alarm signal
@@ -132,10 +132,10 @@ void task_alarmCheck() {
             debugln("HELP detected!");
             // do something when HELP event occur
             // send MQTT alarm message here
-            if (WiFi.status() == WL_CONNECTED) {
-                mqtt_sendAlarm (&s_config, ALARM_HELP);
-                dState.helpLowCnt = 0; //reset counter
+            if (WiFi.status() == WL_CONNECTED && dState.mqttState == MQTT_CONNECTED) {
+                mqtt_sendAlarm (&s_config, &dState, ALARM_HELP);
             }
+            dState.helpLowCnt = 0; //reset counter
         }
     }
 }
@@ -203,7 +203,7 @@ void task_wifiManagement() {
             }
             break;
     }
-    
+   
     // check WiFi reset button
     if(bsp_isWifiResetButtonPressed(&s_config)) {
         // set period blinking task

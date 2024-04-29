@@ -32,6 +32,8 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     debugln(index);
     debug("  total: ");
     debugln(total);
+    debug("  payload: ");
+    debugln(payload);
 }
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
@@ -59,29 +61,35 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
 
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state) {
     JsonDocument doc;
-    char payload[100];
+    char payload[200];
     if (s_state->wifiState == WIFI_CONNECTED) {
         // Apply Json parse to device's state
-	    doc["v"] = FIRMWARE_VERSION;
+        doc["device_id"] = s_state->chipId;
+	    doc["FW"] = s_config->firmwareVer;
         doc["ssid"] = s_state->ssid;
         doc["rssi"] = s_state->rssi;
         doc["ip"] = s_state->ip;
+        doc["timestamp"] = s_state->timestamp;
         serializeJson(doc, payload, sizeof(payload));
-        // MQTT connect
-        //
+        
         // MQTT publish
         mqttClient.publish(s_config->mqttTopicInfo, 0, false, payload);
     }
 }
 
-void mqtt_sendAlarm (deviceConfigType *s_config, int type) {
+void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int type) {
+    JsonDocument doc;
+    char payload[100];
+    doc["device_id"] = s_state->chipId;
+    doc["timestamp"] = s_state->timestamp;
+    serializeJson(doc, payload, sizeof(payload));
     if (type == ALARM_HELP) {
         debugln("Sending HELP");
-        mqttClient.publish(s_config->mqttTopicHelp, 0, false, "1");
+        mqttClient.publish(s_config->mqttTopicHelp, 0, false, payload);
     }
     else if (type == ALARM_SECURITY) {
         debugln("Sending SECURITY");
-        mqttClient.publish(s_config->mqttTopicSecurity, 0, false, "1");
+        mqttClient.publish(s_config->mqttTopicSecurity, 0, false, payload);
     }
 }
 
