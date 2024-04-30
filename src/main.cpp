@@ -97,7 +97,6 @@ void loop(){
 
 
 void task_blinkStatusLED() {
-    debugln("********** task blink statue LED");
     if (dState.wifiState == WIFI_DISCONNECTED || dState.wifiState == WIFI_CONNECTING) {
         bsp_turnOffStatusLED(&s_config);
     }
@@ -251,7 +250,12 @@ void task_updateInfo() {
 }
 
 void task_firmwareUpdateOTA() {
-    debugln("Check update firmware...");
+    if (dState.otaRequest) {
+        // update firmware here
+        // restart device
+        debugln("Upgrade Firmware Successfully! Restart the device.");
+        ESP.restart();
+    }
 }
 
 void task_updateTimestamp() {

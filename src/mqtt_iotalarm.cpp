@@ -4,6 +4,7 @@
 
 AsyncMqttClient mqttClient;
 int8_t *pMqttState;
+bool *pOtaRequest;
 
 
 
@@ -34,6 +35,10 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     debugln(total);
     debug("  payload: ");
     debugln(payload);
+
+    // if payload is its Chip ID
+    // set OTA Request flag to true, via pointer
+    *pOtaRequest = true;
 }
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
@@ -51,6 +56,7 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
     debug(", port=");
     debugln(s_config->mqttPort);
     pMqttState = &(s_state->mqttState);
+    pOtaRequest = &(s_state->otaRequest);
     mqttClient.onConnect(onMqttConnect);
     mqttClient.onDisconnect(onMqttDisconnect);
     mqttClient.onMessage(onMqttMessage);

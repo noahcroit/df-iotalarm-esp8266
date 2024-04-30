@@ -70,6 +70,7 @@ typedef struct
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
     bool alreadySubscribe = false;
+    bool otaRequest = false;
     String ssid;
     IPAddress ip;
     int rssi;
