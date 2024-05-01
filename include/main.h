@@ -6,6 +6,8 @@
 #include <LittleFS.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
@@ -27,6 +29,7 @@
 #define TASK_PERIOD_UPDATE_TIMESTAMP 60000
 #define TASK_PERIOD_OTA 3000
 #define NTP_OFFSET_TH 7*60*60
+#define UPGRADE_FIRMWARE_URL "http://192.168.1.93:8000/Workspace/digitalfocus/iot_alarm/df-iotalarm-esp8266/.pio/build/nodemcuv2/firmware.bin"
 
 typedef struct
 {
@@ -106,6 +109,7 @@ extern "C" {
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config);
 bool saveConfigJSON (const char* filename, deviceConfigType *s_config);
 bool resetWifiConfig (deviceConfigType *s_config);
+void firmwareUpdate(deviceConfigType *s_config);
 
 bool bsp_hwInit (deviceConfigType *s_config); 
 void bsp_toggleStatusLED (deviceConfigType *s_config);

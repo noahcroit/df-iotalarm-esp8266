@@ -2,7 +2,8 @@
 
 
 
-WiFiManager wm; 
+WiFiManager wm;
+WiFiClient wc;
 
 
 
@@ -23,7 +24,7 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
         debugln("Failed to parse config file");
         return false;
     }
-    const char *firmwareVer = jsonDoc["firmware_ver"];
+    //const char *firmwareVer = jsonDoc["firmware_ver"];
     const char *configAP = jsonDoc["config_ap"];
     const char *mqttBrokerUrl = jsonDoc["mqtt_broker"];
     int mqttPort = jsonDoc["mqtt_port"];
@@ -33,7 +34,8 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     const char *mqttTopicOta = jsonDoc["topic_ota"];
     const char *ntpServer = jsonDoc["ntp_server"];
     
-    strcpy(s_config->firmwareVer, firmwareVer);
+    //strcpy(s_config->firmwareVer, firmwareVer);
+    strcpy(s_config->firmwareVer, FIRMWARE_VERSION);
     strcpy(s_config->configAP, configAP);
     strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
     strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
@@ -94,3 +96,29 @@ bool resetWifiConfig (deviceConfigType *s_config) {
     }
     return res;
 }
+
+void firmwareUpdate(deviceConfigType *s_config) {
+    debugln("Start firmware upgrade with OTA");
+    ESPhttpUpdate.setClientTimeout(8000);
+    ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(wc, UPGRADE_FIRMWARE_URL);
+    if (ret == HTTP_UPDATE_OK) {
+        switch (ret) {
+            case HTTP_UPDATE_FAILED:
+                debugln("HTTP_UPDATE_FAILED Error");
+                break;
+            case HTTP_UPDATE_NO_UPDATES:
+                debugln("HTTP_UPDATE_NO_UPDATES");
+                break;
+            case HTTP_UPDATE_OK:
+                debugln("HTTP_UPDATE_OK");
+                break;
+        }
+    }
+    else{
+        debug("Update is not OK, ret=");
+        debugln(ret);
+    }
+}
+
+

@@ -29,7 +29,7 @@ deviceStateType dState;
 
 
 void setup(){
-    // get chip ID
+    // get chip ID 
     dState.chipId = ESP.getChipId();
 
     // Hardware Initialize
@@ -252,8 +252,11 @@ void task_updateInfo() {
 void task_firmwareUpdateOTA() {
     if (dState.otaRequest) {
         // update firmware here
+        firmwareUpdate(&s_config);
+
         // restart device
         debugln("Upgrade Firmware Successfully! Restart the device.");
+        delay(2000);
         ESP.restart();
     }
 }
