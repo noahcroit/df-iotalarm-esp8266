@@ -11,7 +11,7 @@
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#define FIRMWARE_VERSION "0.1"
+#define FIRMWARE_VERSION "0.2"
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -29,11 +29,9 @@
 #define TASK_PERIOD_UPDATE_TIMESTAMP 60000
 #define TASK_PERIOD_OTA 3000
 #define NTP_OFFSET_TH 7*60*60
-#define UPGRADE_FIRMWARE_URL "http://192.168.1.93:8000/Workspace/digitalfocus/iot_alarm/df-iotalarm-esp8266/.pio/build/nodemcuv2/firmware.bin"
 
 typedef struct
 {
-    char firmwareVer[6];
     char configAP[40];
     char mqttBrokerUrl[40];
     int mqttPort;
@@ -44,6 +42,7 @@ typedef struct
     char mqttTopicInfo[40];
     char mqttTopicOta[40];
     char ntpServer[20];
+    char otaUrl[200];
     int8_t ioHelp;
     int8_t ioSecurity;
     int8_t ioStatusLED;

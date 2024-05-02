@@ -24,7 +24,7 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
         debugln("Failed to parse config file");
         return false;
     }
-    //const char *firmwareVer = jsonDoc["firmware_ver"];
+    
     const char *configAP = jsonDoc["config_ap"];
     const char *mqttBrokerUrl = jsonDoc["mqtt_broker"];
     int mqttPort = jsonDoc["mqtt_port"];
@@ -33,18 +33,17 @@ bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     const char *mqttTopicInfo = jsonDoc["topic_info"];
     const char *mqttTopicOta = jsonDoc["topic_ota"];
     const char *ntpServer = jsonDoc["ntp_server"];
+    const char *otaUrl = jsonDoc["ota_url"];
     
-    //strcpy(s_config->firmwareVer, firmwareVer);
-    strcpy(s_config->firmwareVer, FIRMWARE_VERSION);
     strcpy(s_config->configAP, configAP);
+    s_config->mqttPort = mqttPort;
     strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
     strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
     strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
     strcpy(s_config->mqttTopicInfo, mqttTopicInfo);
     strcpy(s_config->mqttTopicOta, mqttTopicOta);
     strcpy(s_config->ntpServer, ntpServer);
-    s_config->mqttPort = mqttPort;
-
+    strcpy(s_config->otaUrl, otaUrl);
     return true;
 }
 
@@ -101,7 +100,7 @@ void firmwareUpdate(deviceConfigType *s_config) {
     debugln("Start firmware upgrade with OTA");
     ESPhttpUpdate.setClientTimeout(8000);
     ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-    t_httpUpdate_return ret = ESPhttpUpdate.update(wc, UPGRADE_FIRMWARE_URL);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(wc, s_config->otaUrl);
     if (ret == HTTP_UPDATE_OK) {
         switch (ret) {
             case HTTP_UPDATE_FAILED:

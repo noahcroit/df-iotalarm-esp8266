@@ -40,11 +40,16 @@ void setup(){
     s_config.baudrate = UART_BAUD;
     bsp_hwInit(&s_config); 
     bsp_turnOffStatusLED(&s_config);
+    debugln("*****");
+    debug("Fimware Version=");
+    debugln(FIRMWARE_VERSION);
+    debug("Chip ID=");
+    debugln(dState.chipId);
+    debugln("*****");
 
     // Device Configuration from JSON file
     loadConfigJSON(configFile, &s_config);
     debugln("******************* Load config ********************");
-    debugln(s_config.firmwareVer);
     debugln(s_config.configAP);
     debugln(s_config.mqttBrokerUrl);
     debugln(s_config.mqttPort);
@@ -53,21 +58,22 @@ void setup(){
     debugln(s_config.mqttTopicInfo);
     debugln(s_config.mqttTopicOta);
     debugln(s_config.ntpServer);
+    debugln(s_config.otaUrl);
     debugln("****************************************************");
     
     // NTP Timestamp Initialize
     timestamp_ntpInit(&s_config, &dState);
-    
-    delay(3000);
 
     // Create Tasks
     PeriodTask t1(TASK_PERIOD_BLINKSTATUS, &task_blinkStatusLED); 
+    
     PeriodTask t2(TASK_PERIOD_ALARMCHECK, &task_alarmCheck);
     PeriodTask t3(TASK_PERIOD_WIFIMANAGEMENT, &task_wifiManagement);
     PeriodTask t4(TASK_PERIOD_MQTTMANAGEMENT, &task_mqttManagement);
     PeriodTask t5(TASK_PERIOD_UPDATEINFO, &task_updateInfo);
     PeriodTask t6(TASK_PERIOD_OTA, &task_firmwareUpdateOTA);
     PeriodTask t7(TASK_PERIOD_UPDATE_TIMESTAMP, &task_updateTimestamp);
+    delay(3000);
     
     schd.addTask(t1);
     schd.addTask(t2);

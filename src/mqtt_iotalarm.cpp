@@ -5,6 +5,7 @@
 AsyncMqttClient mqttClient;
 int8_t *pMqttState;
 bool *pOtaRequest;
+uint32_t *pChipId;
 
 
 
@@ -38,7 +39,11 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
     // if payload is its Chip ID
     // set OTA Request flag to true, via pointer
-    *pOtaRequest = true;
+    int id = atoi(payload);
+    if (id == *pChipId) {
+        debugln("Chip ID matched. Set OTA request flag");
+        *pOtaRequest = true;
+    }
 }
 
 void onMqttSubscribe(uint16_t packetId, uint8_t qos) {
@@ -57,6 +62,7 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
     debugln(s_config->mqttPort);
     pMqttState = &(s_state->mqttState);
     pOtaRequest = &(s_state->otaRequest);
+    pChipId = &(s_state->chipId);
     mqttClient.onConnect(onMqttConnect);
     mqttClient.onDisconnect(onMqttDisconnect);
     mqttClient.onMessage(onMqttMessage);
@@ -71,7 +77,7 @@ void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state)
     if (s_state->wifiState == WIFI_CONNECTED) {
         // Apply Json parse to device's state
         doc["device_id"] = s_state->chipId;
-	    doc["FW"] = s_config->firmwareVer;
+	    doc["FW"] = FIRMWARE_VERSION;
         doc["ssid"] = s_state->ssid;
         doc["rssi"] = s_state->rssi;
         doc["ip"] = s_state->ip;
