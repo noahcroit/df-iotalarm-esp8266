@@ -26,6 +26,7 @@ mosquitto_sub -h broker.hivemq.com -t "iotalarm/info" -t "iotalarm/help" -t "iot
 ### OTA Server
 For testing, use python's HTTP server module to download firmware (.bin)
 ```
+cd ~
 python -m http.server 8000
 ```
 Publish MQTT to OTA topic with chip ID to start OTA process.

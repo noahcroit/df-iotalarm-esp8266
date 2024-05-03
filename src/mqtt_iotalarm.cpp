@@ -39,7 +39,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
     // if payload is its Chip ID
     // set OTA Request flag to true, via pointer
-    int id = atoi(payload);
+    uint32_t id = atoi(payload);
     if (id == *pChipId) {
         debugln("Chip ID matched. Set OTA request flag");
         *pOtaRequest = true;

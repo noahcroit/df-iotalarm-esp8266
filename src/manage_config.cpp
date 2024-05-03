@@ -66,8 +66,12 @@ bool saveConfigJSON (const char* filename, deviceConfigType *s_config) {
 }
 
 bool resetWifiConfig (deviceConfigType *s_config) {
-    char mqtt_broker[40] = "Broker URL";
-    char mqtt_port[10] = "Port";
+    char mqtt_broker[40];
+    char mqtt_port[10];
+    char ota_url[200];
+    strcpy(mqtt_broker, s_config->mqttBrokerUrl);
+    sprintf(mqtt_port, "%d", s_config->mqttPort);
+    strcpy(ota_url, s_config->otaUrl);
     
     WiFi.mode(WIFI_STA);
     bool res=false;
@@ -76,8 +80,10 @@ bool resetWifiConfig (deviceConfigType *s_config) {
     // Create config menu
     WiFiManagerParameter custom_mqtt_broker("ID:MQTT_BROKER_URL", "MQTT broker URL", mqtt_broker, 40);
     WiFiManagerParameter custom_mqtt_port("ID:MQTT_BROKER_PORT", "MQTT broker port", mqtt_port, 40);
+    WiFiManagerParameter custom_ota_url("ID:OTA_URL", "OTA URL", ota_url, 120);
     wm.addParameter(&custom_mqtt_broker);
     wm.addParameter(&custom_mqtt_port);
+    wm.addParameter(&custom_ota_url);
     // Start portal
     res = wm.startConfigPortal(s_config->configAP);
     if(!res) {
