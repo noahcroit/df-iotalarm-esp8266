@@ -1,6 +1,7 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#include <stdio.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
@@ -11,7 +12,7 @@
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#define FIRMWARE_VERSION "0.2.1"
+#define FIRMWARE_VERSION "0.2.2-a"
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -107,7 +108,7 @@ extern "C" {
  */
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config);
 bool saveConfigJSON (const char* filename, deviceConfigType *s_config);
-bool resetWifiConfig (deviceConfigType *s_config);
+bool resetWifiConfig (deviceConfigType *s_config, uint32_t chipId);
 void firmwareUpdate(deviceConfigType *s_config);
 
 bool bsp_hwInit (deviceConfigType *s_config); 

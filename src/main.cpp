@@ -198,7 +198,7 @@ void task_wifiManagement() {
         case WIFI_RECONFIG:
             bool res_reset;
             debugln("WIFI Re-config...");
-            res_reset = resetWifiConfig(&s_config);
+            res_reset = resetWifiConfig(&s_config, dState.chipId);
             if (res_reset) {
                 debugln("Reset by itself for new WiFi config...");
                 ESP.restart();
