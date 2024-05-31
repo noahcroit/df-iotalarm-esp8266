@@ -65,7 +65,7 @@ bool saveConfigJSON (const char* filename, deviceConfigType *s_config) {
     return true;
 }
 
-bool resetWifiConfig (deviceConfigType *s_config) {
+bool resetWifiConfig (deviceConfigType *s_config, uint32_t chipId) {
     char mqtt_broker[40];
     char mqtt_port[10];
     char ota_url[200];
@@ -85,7 +85,9 @@ bool resetWifiConfig (deviceConfigType *s_config) {
     wm.addParameter(&custom_mqtt_port);
     wm.addParameter(&custom_ota_url);
     // Start portal
-    res = wm.startConfigPortal(s_config->configAP);
+    char apName[30];
+    sprintf(apName, "%s-%d", s_config->configAP, chipId);
+    res = wm.startConfigPortal(apName);
     if(!res) {
         debugln("Failed to connect or Abort config.");
     }
