@@ -74,13 +74,15 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state) {
     JsonDocument doc;
     char payload[200];
+    String str_ip;
     if (s_state->wifiState == WIFI_CONNECTED) {
         // Apply Json parse to device's state
         doc["device_id"] = s_state->chipId;
-	    doc["FW"] = FIRMWARE_VERSION;
+	doc["FW"] = FIRMWARE_VERSION;
         doc["ssid"] = s_state->ssid;
         doc["rssi"] = s_state->rssi;
-        doc["ip"] = s_state->ip;
+	str_ip = s_state->ip.toString();
+        doc["ip"] = str_ip;
         doc["timestamp"] = s_state->timestamp;
         serializeJson(doc, payload, sizeof(payload));
         
