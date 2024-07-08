@@ -12,7 +12,7 @@
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#define FIRMWARE_VERSION "0.2.2-a"
+#define FIRMWARE_VERSION "0.2.3"
 #define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
@@ -106,6 +106,7 @@ extern "C" {
  *
  *
  */
+bool loadConfig (deviceConfigType *s_config);
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config);
 bool saveConfigJSON (const char* filename, deviceConfigType *s_config);
 bool resetWifiConfig (deviceConfigType *s_config, uint32_t chipId);

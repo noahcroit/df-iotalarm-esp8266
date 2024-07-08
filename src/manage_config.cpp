@@ -6,6 +6,28 @@ WiFiManager wm;
 WiFiClient wc;
 
 
+bool loadConfig (deviceConfigType *s_config) {
+    const char *configAP = FLAG_CONFIG_AP;
+    const char *mqttBrokerUrl = FLAG_MQTT_BROKER_URL;
+    const char *mqttPort = FLAG_MQTT_PORT;
+    const char *mqttTopicHelp = FLAG_MQTT_TOPIC_HELP;
+    const char *mqttTopicSecurity = FLAG_MQTT_TOPIC_SECURITY;
+    const char *mqttTopicInfo = FLAG_MQTT_TOPIC_INFO;
+    const char *mqttTopicOta = FLAG_MQTT_TOPIC_OTA;
+    const char *ntpServer = FLAG_NTP_SERVER;
+    const char *otaUrl = FLAG_OTA_URL;
+    
+    strcpy(s_config->configAP, configAP);
+    s_config->mqttPort = std::stoi(mqttPort);
+    strcpy(s_config->mqttBrokerUrl, mqttBrokerUrl);
+    strcpy(s_config->mqttTopicHelp, mqttTopicHelp);
+    strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
+    strcpy(s_config->mqttTopicInfo, mqttTopicInfo);
+    strcpy(s_config->mqttTopicOta, mqttTopicOta);
+    strcpy(s_config->ntpServer, ntpServer);
+    strcpy(s_config->otaUrl, otaUrl);
+    return true;
+}
 
 bool loadConfigJSON (const char* filename, deviceConfigType *s_config) {
     if (!LittleFS.begin()) {

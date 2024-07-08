@@ -48,7 +48,8 @@ void setup(){
     debugln("*****");
 
     // Device Configuration from JSON file
-    loadConfigJSON(configFile, &s_config);
+    //loadConfigJSON(configFile, &s_config);
+    loadConfig(&s_config);
     debugln("******************* Load config ********************");
     debugln(s_config.configAP);
     debugln(s_config.mqttBrokerUrl);
