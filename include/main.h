@@ -12,8 +12,6 @@
 #include <AsyncMqttClient.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#define FIRMWARE_VERSION "0.2.3"
-#define DEBUG           1
 #define IO_FLASH        0
 #define IO_HELP         2
 #define IO_SECURITY     4
