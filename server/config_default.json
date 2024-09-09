@@ -1,0 +1,14 @@
+{
+    "mqtt_broker": "",
+    "mqtt_port": "",
+    "mqtt_topics": [
+        "iotalarm/info",
+        "iotalarm/help",
+        "iotalarm/security",
+        "iotalarm/ota"
+    ],
+    "keepalive": 60,
+    "ws_url": "ws://localhost:8080",
+    "ws_port": 8080
+}
+

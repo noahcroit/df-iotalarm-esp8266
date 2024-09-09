@@ -1,0 +1,12 @@
+[Unit]
+Description=Python HTTP Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 1885
+User=www-data
+Group=www-data
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
