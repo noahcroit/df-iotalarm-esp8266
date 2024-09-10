@@ -1,4 +1,5 @@
 #include <main.h>
+#include <time.h>
 
 
 
@@ -33,13 +34,20 @@ void timestamp_updateRequest(deviceStateType *s_state) {
     int monthDay;
     if (s_state->wifiState == WIFI_CONNECTED) {
         timeClient.update();
-        s_state->timestamp = timeClient.getFormattedTime();
         s_state->timestampEpoch = timeClient.getEpochTime();
-
-        ptm = gmtime ((time_t *)&(s_state->timestampEpoch));
-        currentYear = ptm->tm_year+1900;
-        currentMonth = ptm->tm_mon+1;
-        monthDay = ptm->tm_mday;
-        currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
+        s_state->timestamp = epoch2Date(s_state->timestampEpoch);
     }
+}
+
+String epoch2Date(unsigned long epoch) {
+    time_t rawtime;
+    struct tm  ts;
+    char       buf[80];
+
+	rawtime=epoch;
+
+    // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
+    ts = *localtime(&rawtime);
+    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
+    return String(buf);
 }

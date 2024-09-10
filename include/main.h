@@ -127,6 +127,7 @@ void mqtt_connect (deviceConfigType *s_config);
 void timestamp_ntpInit(deviceConfigType *s_config, deviceStateType *s_state);
 void timestamp_start(deviceStateType *s_state);
 void timestamp_updateRequest(deviceStateType *s_state);
+String epoch2Date(unsigned long epoch);
 #ifdef __cplusplus
 }
 #endif
