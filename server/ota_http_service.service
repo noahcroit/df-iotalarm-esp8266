@@ -3,10 +3,10 @@ Description=Python HTTP Server
 After=network.target
 
 [Service]
+WorkingDirectory=/root/df-iotalarm-esp8266
 ExecStart=/usr/bin/python3 -m http.server 1885
-User=www-data
-Group=www-data
 Restart=on-failure
+User=root
 
 [Install]
 WantedBy=multi-user.target
