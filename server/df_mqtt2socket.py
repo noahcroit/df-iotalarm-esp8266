@@ -69,8 +69,9 @@ async def task_mqttpub():
 
 
 async def ws_handler(websocket):
-    asyncio.create_task(task_send2wsclient(websocket))
-    while True:
+    global isrun_wsserver
+    t_send2wsclient = asyncio.create_task(task_send2wsclient(websocket))
+    while isrun_wsserver:
         try:
             # receiving ws
             rxdata = await websocket.recv()
@@ -78,12 +79,14 @@ async def ws_handler(websocket):
             data = json.loads(rxdata)
             q_ws2mqtt.put(data)
         except websockets.ConnectionClosedOK:
+            t_send2wsclient.cancel()
             break
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
 async def task_send2wsclient(websocket):
     global q_mqtt2ws
-    while True:
+    global isrun_wsserver
+    while isrun_wsserver:
         try:
             # sending ws
             if not q_mqtt2ws.empty():
@@ -92,7 +95,7 @@ async def task_send2wsclient(websocket):
                 await websocket.send(txdata)
         except websockets.ConnectionClosedOK:
             break
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
 
 async def task_wsserver():
     global cfg
