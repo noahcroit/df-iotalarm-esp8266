@@ -13,18 +13,13 @@ import json
 cfg = None
 q_ws2mqtt = queue.Queue()
 q_mqtt2ws = queue.Queue()
-isrun_mqttsub=False
-isrun_mqttpub=False
-isrun_wsserver=False
 
 
 
 async def task_mqttsub():
     global cfg
-    global isrun_mqttsub
     global q_mqtt2ws
-    isrun_mqttsub=True
-    while isrun_mqttsub:
+    while True:
         try:
             async with aiomqtt.Client(cfg['mqtt_broker'], int(cfg['mqtt_port'])) as client:
                 await client.subscribe(cfg['mqtt_topics'][0])
@@ -39,15 +34,13 @@ async def task_mqttsub():
         except Exception as e:
             #logging.error(e)
             logging.warning("task mqttsub will be stop")
-            isrun_mqttsub=False
+            break
         await asyncio.sleep(1)
 
 async def task_mqttpub():
     global cfg
-    global isrun_mqttpub
     global q_ws2mqtt
-    isrun_mqttpub=True
-    while isrun_mqttpub:
+    while True:
         try:
             if not q_ws2mqtt.empty():
                 data = q_ws2mqtt.get()
@@ -63,15 +56,14 @@ async def task_mqttpub():
         except Exception as e:
             #logging.error(e)
             logging.warning("task mqttpub will be stop")
-            isrun_mqttpub=False
+            break
         await asyncio.sleep(1)
 
 
 
 async def ws_handler(websocket):
-    global isrun_wsserver
     t_send2wsclient = asyncio.create_task(task_send2wsclient(websocket))
-    while isrun_wsserver:
+    while True:
         try:
             # receiving ws
             rxdata = await websocket.recv()
@@ -85,8 +77,7 @@ async def ws_handler(websocket):
 
 async def task_send2wsclient(websocket):
     global q_mqtt2ws
-    global isrun_wsserver
-    while isrun_wsserver:
+    while True:
         try:
             # sending ws
             if not q_mqtt2ws.empty():
@@ -95,17 +86,17 @@ async def task_send2wsclient(websocket):
                 await websocket.send(txdata)
         except websockets.ConnectionClosedOK:
             break
+        except asyncio.CancelledError:
+            print("Send2wsclient task was canceled.")
+            break
         await asyncio.sleep(1)
 
 async def task_wsserver():
     global cfg
-    global isrun_wsserver
     global q_mqtt2ws
-    isrun_wsserver=True
     from websockets.asyncio.server import serve
     async with serve(ws_handler, "", int(cfg['ws_port'])):
         await asyncio.get_running_loop().create_future()
-    isrun_wsserver=False
     logging.warning("task websocket server will be stop")
 
 
@@ -131,21 +122,21 @@ async def main():
     f.close()
 
     # Create async tasks
-    asyncio.create_task(task_mqttsub())
-    asyncio.create_task(task_mqttpub())
-    asyncio.create_task(task_wsserver())
+    t1 = asyncio.create_task(task_mqttsub())
+    t2 = asyncio.create_task(task_mqttpub())
+    t3 = asyncio.create_task(task_wsserver())
 
     while True:
         logging.warning("checking task(s) status...")
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
         # check tasks
-        if not isrun_mqttsub:
-            asyncio.create_task(task_mqttsub())
-        if not isrun_mqttpub:
-            asyncio.create_task(task_mqttpub())
-        if not isrun_wsserver:
-            asyncio.create_task(task_wsserver())
+        if t1.done():
+            t1 = asyncio.create_task(task_mqttsub())
+        if t2.done():
+            t2 = asyncio.create_task(task_mqttpub())
+        if t3.done():
+            t3 = asyncio.create_task(task_wsserver())
 
 
 
