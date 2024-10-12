@@ -126,17 +126,34 @@ async def main():
     t2 = asyncio.create_task(task_mqttpub())
     t3 = asyncio.create_task(task_wsserver())
 
+    # count for restart
+    restart_cnt=0
+
     while True:
         logging.warning("checking task(s) status...")
         await asyncio.sleep(1)
 
         # check tasks
         if t1.done():
+            logging.warning("Task 1 : MQTT sub done! restarting...")
             t1 = asyncio.create_task(task_mqttsub())
         if t2.done():
+            logging.warning("Task 2 : MQTT pub done! restarting...")
             t2 = asyncio.create_task(task_mqttpub())
         if t3.done():
+            logging.warning("Task 3 : websocket server done! restarting...")
             t3 = asyncio.create_task(task_wsserver())
+
+        # restart schedule for every 6 hours
+        if restart_cnt >= 21600:
+            restart_cnt=0
+            t1.cancel()
+            t2.cancel()
+            t3.cancel()
+            t1 = asyncio.create_task(task_mqttsub())
+            t2 = asyncio.create_task(task_mqttpub())
+            t3 = asyncio.create_task(task_wsserver())
+        restart_cnt += 1
 
 
 
