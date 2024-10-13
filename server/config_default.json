@@ -9,6 +9,7 @@
     ],
     "keepalive": 60,
     "ws_url": "ws://localhost:8080",
-    "ws_port": 8080
+    "ws_port": 8080,
+    "API_request_id": ""
 }
 
