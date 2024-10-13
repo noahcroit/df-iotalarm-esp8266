@@ -7,6 +7,7 @@ import time
 import logging
 import argparse
 import json
+import requests
 
 
 
@@ -43,16 +44,21 @@ async def task_mqttpub():
     while True:
         try:
             if not q_ws2mqtt.empty():
+                l_device_id=[]
                 data = q_ws2mqtt.get()
                 if data['topic'] == 'iotalarm/OTA':
                     if data['ID'] == 'ALL':
-                        upgrade_firmware_all()
+                        logging.warning("ota request ALL from frontend")
+                        l_device_id = get_device_list()
                     else:
                         logging.warning("ota request from frontend : %s", data['ID'])
-                        device_id = data['ID']
-                    async with aiomqtt.Client(cfg['mqtt_broker'], int(cfg['mqtt_port'])) as client:
-                        await client.publish(cfg['mqtt_topics'][3], payload=str(device_id))
-                        logging.warning("ota topic : %s, payload=%s", cfg['mqtt_topics'][3], data['ID'])
+                        l_device_id.append(str(data['ID']))
+
+                    for device_id in l_device_id:
+                        async with aiomqtt.Client(cfg['mqtt_broker'], int(cfg['mqtt_port'])) as client:
+                            await client.publish(cfg['mqtt_topics'][3], payload=device_id)
+                            logging.warning("ota topic : %s, payload=%s", cfg['mqtt_topics'][3], device_id)
+
         except Exception as e:
             #logging.error(e)
             logging.warning("task mqttpub will be stop")
@@ -101,8 +107,16 @@ async def task_wsserver():
 
 
 
-async def upgrade_firmware_all():
-    pass
+def get_device_list():
+    global cfg
+    r = requests.get(cfg['API_request_id'])
+    if r.status_code == 200:
+        response_text = r.text
+        response_text = response_text[1:-1]
+        l = response_text.split(',')
+        return l
+    else:
+        return None
 
 
 
