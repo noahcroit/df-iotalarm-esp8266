@@ -1,6 +1,6 @@
 FROM python:3.10
 
-COPY wsserver.py mqtt_worker.py config.json requirements.txt /home/iotworker/
+COPY mqtt_worker.py config.json requirements.txt /home/iotworker/
 
 WORKDIR /home/iotworker/
 
@@ -13,6 +13,6 @@ EXPOSE 1884
 EXPOSE 1885
 EXPOSE 6379
 
-CMD ["python", "wsserver.py", "-j", "config.json"]
+CMD ["python", "mqtt_worker.py", "-j", "config.json"]
 
 

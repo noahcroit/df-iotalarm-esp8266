@@ -1,6 +1,6 @@
 FROM python:3.10
 
-COPY wsserver.py mqtt_worker.py config.json requirements.txt /home/iotworker/
+COPY wsserver.py config.json requirements.txt /home/iotworker/
 
 WORKDIR /home/iotworker/
 
