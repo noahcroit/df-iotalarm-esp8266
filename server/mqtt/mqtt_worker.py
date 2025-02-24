@@ -56,6 +56,7 @@ async def task_mqttpub():
                         async with aiomqtt.Client(cfg['mqtt_broker'], int(cfg['mqtt_port'])) as client:
                             await client.publish(cfg['mqtt_topics'][3], payload=device_id)
                             logger.info("ota topic : %s, payload=%s", cfg['mqtt_topics'][3], device_id)
+                        await asyncio.sleep(1)
         except Exception as e:
             logger.warning("task: mqtt publish will be stop")
             break

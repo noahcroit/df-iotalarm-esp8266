@@ -58,6 +58,7 @@ async def task_mqttpub():
                         async with aiomqtt.Client(cfg['mqtt_broker'], int(cfg['mqtt_port'])) as client:
                             await client.publish(cfg['mqtt_topics'][3], payload=device_id)
                             logging.warning("ota topic : %s, payload=%s", cfg['mqtt_topics'][3], device_id)
+                            await asyncio.sleep(10)
 
         except Exception as e:
             #logging.error(e)
