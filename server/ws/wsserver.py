@@ -14,16 +14,14 @@ async def connection_handler(websocket):
     global num_client
     global seq
     global q2device
-
+    global logger
     # count new connection
     client_id = seq
     num_client += 1
     seq += 1
     logger.info('New client connected. Current num=%d', num_client)
-
     # create new task for sending data to client of this connection
     t_tx = asyncio.create_task(task_send2client(websocket, client_id))
-
     # loop for receiving data from client
     while True:
         try:
@@ -40,6 +38,7 @@ async def connection_handler(websocket):
 
 async def task_send2client(websocket, client_id):
     global q2client
+    global logger
     while True:
         if not q2client.empty():
             logger.info('Sending a device info to client ID=%d', client_id)
@@ -51,6 +50,7 @@ async def task_send2client(websocket, client_id):
 
 async def task_run_wsserver():
     global cfg
+    global logger
     logger.info('Starting a websocket server task')
     from websockets.asyncio.server import serve
     async with serve(connection_handler, "", cfg['ws_port']):
@@ -60,6 +60,7 @@ async def task_run_wsserver():
 
 async def task_redissub(channel: aioredis.client.PubSub):
     global q2client
+    global logger
     logger.info('Starting a REDIS subscribe task for receiving device info')
     while True:
         try:
@@ -80,6 +81,7 @@ async def task_redissub(channel: aioredis.client.PubSub):
 
 async def task_redispub(redis, channel_pub):
     global q2device
+    global logger
     logger.info('Starting a REDIS publish task for sending OTA request')
     while True:
         if not q2device.empty():
@@ -92,6 +94,7 @@ async def task_redispub(redis, channel_pub):
 
 async def main():
     global cfg
+    global logger
     # Initialize parser
     parser = argparse.ArgumentParser()
     # Adding optional argument
