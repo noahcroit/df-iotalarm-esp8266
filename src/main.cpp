@@ -104,16 +104,18 @@ void loop(){
 
 
 void task_blinkStatusLED() {
-    if (dState.wifiState == WIFI_DISCONNECTED || dState.wifiState == WIFI_CONNECTING) {
-        bsp_turnOffStatusLED(&s_config);
-    }
     if(dState.wifiState == WIFI_RECONFIG) {
         bsp_turnOnStatusLED(&s_config);
     }
-    if(dState.wifiState == WIFI_CONNECTED) {
-        bsp_turnOnStatusLED(&s_config);
-        delay(30);
-        bsp_turnOffStatusLED(&s_config);
+    else {
+        if(dState.wifiState == WIFI_CONNECTED && dState.mqttState == MQTT_CONNECTED) {
+            bsp_turnOnStatusLED(&s_config);
+            delay(30);
+            bsp_turnOffStatusLED(&s_config);
+        }
+        else {
+            bsp_turnOffStatusLED(&s_config);
+        }
     }
 }
 
