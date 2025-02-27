@@ -159,9 +159,9 @@ void task_wifiManagement() {
         case WIFI_DISCONNECTED:
             if (WiFi.status() != WL_CONNECTED) {
                 debugln("Attemp to connect to the previous WiFi AP...");
-                WiFi.begin();
-                dState.wifiState = WIFI_CONNECTING;
                 dState.wifiConnectAttemptCnt = 0;
+                dState.wifiState = WIFI_CONNECTING;
+                WiFi.begin();
             }
             break;
 
@@ -232,8 +232,8 @@ void task_mqttManagement() {
                 debugln("Attempt to connect to MQTT broker...");
                 dState.alreadySubscribe = false;
                 dState.mqttConnectAttemptCnt = 0;
-                mqtt_connect(&s_config);
                 dState.mqttState = MQTT_CONNECTING;
+                mqtt_connect(&s_config);
             }
             break;
         case MQTT_CONNECTING:
