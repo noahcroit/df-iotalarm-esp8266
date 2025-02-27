@@ -6,6 +6,8 @@ AsyncMqttClient mqttClient;
 int8_t *pMqttState;
 bool *pOtaRequest;
 uint32_t *pChipId;
+char *pTopicOta;
+char *pTopicEcho;
 
 
 
@@ -41,8 +43,15 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     // set OTA Request flag to true, via pointer
     uint32_t id = atoi(payload);
     if (id == *pChipId) {
-        debugln("Chip ID matched. Set OTA request flag");
-        *pOtaRequest = true;
+        debugln("Chip ID matched!");
+        if (strcmp(topic, pTopicOta) == 0) {
+            debugln("Set OTA request flag");
+            *pOtaRequest = true;
+        }
+        else if (strcmp(topic, pTopicEcho) == 0) {
+            debugln("Send message back to echo topic");
+            mqttClient.publish(pTopicEcho, 0, false, "ECHO OK");
+        }
     }
 }
 
@@ -60,6 +69,8 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state) {
     debug(s_config->mqttBrokerUrl);
     debug(", port=");
     debugln(s_config->mqttPort);
+    pTopicOta = (char *)&(s_config->mqttTopicOta);
+    pTopicEcho = (char *)&(s_config->mqttTopicEcho);
     pMqttState = &(s_state->mqttState);
     pOtaRequest = &(s_state->otaRequest);
     pChipId = &(s_state->chipId);
@@ -78,10 +89,10 @@ void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state)
     if (s_state->wifiState == WIFI_CONNECTED) {
         // Apply Json parse to device's state
         doc["device_id"] = s_state->chipId;
-	doc["FW"] = FIRMWARE_VERSION;
+        doc["FW"] = FIRMWARE_VERSION;
         doc["ssid"] = s_state->ssid;
         doc["rssi"] = s_state->rssi;
-	str_ip = s_state->ip.toString();
+        str_ip = s_state->ip.toString();
         doc["ip"] = str_ip;
         doc["timestamp"] = s_state->timestamp;
         serializeJson(doc, payload, sizeof(payload));
@@ -109,6 +120,10 @@ void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int t
 
 void mqtt_subscribeOtaRequest (deviceConfigType *s_config) {
     mqttClient.subscribe(s_config->mqttTopicOta, 0);
+}
+
+void mqtt_subscribeEcho (deviceConfigType *s_config) {
+    mqttClient.subscribe(s_config->mqttTopicEcho, 0);
 }
 
 void mqtt_connect (deviceConfigType *s_config) {

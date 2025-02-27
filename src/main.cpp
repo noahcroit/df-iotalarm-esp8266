@@ -242,6 +242,7 @@ void task_mqttManagement() {
                 debugln("MQTT connected successfully!");
                 debugln("Start subscribe OTA topic");
                 mqtt_subscribeOtaRequest(&s_config);
+                mqtt_subscribeEcho(&s_config);
                 dState.alreadySubscribe = true;
             }
             break;

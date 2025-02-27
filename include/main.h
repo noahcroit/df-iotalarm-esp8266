@@ -40,6 +40,7 @@ typedef struct
     char mqttTopicSecurity[40];
     char mqttTopicInfo[40];
     char mqttTopicOta[40];
+    char mqttTopicEcho[40];
     char ntpServer[20];
     char otaUrl[200];
     int8_t ioHelp;
@@ -122,6 +123,7 @@ void mqtt_init (deviceConfigType *s_config, deviceStateType *s_state);
 void mqtt_sendDeviceState (deviceConfigType *s_config, deviceStateType *s_state);
 void mqtt_sendAlarm (deviceConfigType *s_config, deviceStateType *s_state, int type);
 void mqtt_subscribeOtaRequest (deviceConfigType *s_config);
+void mqtt_subscribeEcho (deviceConfigType *s_config);
 void mqtt_connect (deviceConfigType *s_config);
 
 void timestamp_ntpInit(deviceConfigType *s_config, deviceStateType *s_state);

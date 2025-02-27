@@ -14,6 +14,7 @@ bool loadConfig (deviceConfigType *s_config) {
     const char *mqttTopicSecurity = FLAG_MQTT_TOPIC_SECURITY;
     const char *mqttTopicInfo = FLAG_MQTT_TOPIC_INFO;
     const char *mqttTopicOta = FLAG_MQTT_TOPIC_OTA;
+    const char *mqttTopicEcho = FLAG_MQTT_TOPIC_ECHO;
     const char *ntpServer = FLAG_NTP_SERVER;
     const char *otaUrl = FLAG_OTA_URL;
     
@@ -24,6 +25,7 @@ bool loadConfig (deviceConfigType *s_config) {
     strcpy(s_config->mqttTopicSecurity, mqttTopicSecurity);
     strcpy(s_config->mqttTopicInfo, mqttTopicInfo);
     strcpy(s_config->mqttTopicOta, mqttTopicOta);
+    strcpy(s_config->mqttTopicEcho, mqttTopicEcho);
     strcpy(s_config->ntpServer, ntpServer);
     strcpy(s_config->otaUrl, otaUrl);
     return true;
