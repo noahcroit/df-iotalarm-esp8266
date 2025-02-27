@@ -19,6 +19,7 @@
 #define IO_STATUS_LED   16
 #define THRESHOLD_ALARM_LOW_COUNT 6
 #define THRESHOLD_WIFI_CONNECT_ATTEMPT 10
+#define THRESHOLD_MQTT_CONNECT_ATTEMPT 10
 #define UART_BAUD 115200
 #define TASK_PERIOD_BLINKSTATUS 1000
 #define TASK_PERIOD_ALARMCHECK 500
@@ -69,6 +70,7 @@ typedef struct
     int8_t wifiState = WIFI_INIT;
     int8_t mqttState = MQTT_INIT;
     int8_t wifiConnectAttemptCnt = 0;
+    int8_t mqttConnectAttemptCnt = 0;
     int8_t securityLowCnt = 0;
     int8_t helpLowCnt = 0;
     bool alreadySubscribe = false;

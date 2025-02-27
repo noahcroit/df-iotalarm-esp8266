@@ -182,7 +182,7 @@ void task_wifiManagement() {
             else {
                 dState.wifiConnectAttemptCnt++;
                 if (dState.wifiConnectAttemptCnt >= THRESHOLD_WIFI_CONNECT_ATTEMPT) {
-                    debugln("WiFi timeout");
+                    debugln("WiFi connect timeout");
                     dState.wifiState = WIFI_DISCONNECTED;
                 }
             }
@@ -231,11 +231,17 @@ void task_mqttManagement() {
             if (WiFi.status() == WL_CONNECTED) {
                 debugln("Attempt to connect to MQTT broker...");
                 dState.alreadySubscribe = false;
+                dState.mqttConnectAttemptCnt = 0;
                 mqtt_connect(&s_config);
                 dState.mqttState = MQTT_CONNECTING;
             }
             break;
         case MQTT_CONNECTING:
+            dState.mqttConnectAttemptCnt++;
+            if (dState.mqttConnectAttemptCnt >= THRESHOLD_MQTT_CONNECT_ATTEMPT) {
+                debugln("MQTT connect timeout");
+                dState.mqttState = MQTT_DISCONNECTED;
+            }
             break;
         case MQTT_CONNECTED:
             if (!dState.alreadySubscribe) {
