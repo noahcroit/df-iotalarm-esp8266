@@ -140,6 +140,7 @@ async def main():
             t_ws = asyncio.create_task(task_run_wsserver())
 
         # restart schedule for every 6 hours
+        """
         if restart_cnt >= 21600:
             restart_cnt=0
             t_rsub.cancel()
@@ -149,6 +150,7 @@ async def main():
             t_rpub = asyncio.create_task(task_redispub(redis, 'ch:from_client'))
             t_ws = asyncio.create_task(task_run_wsserver())
         restart_cnt += 1
+        """
 
 
 
